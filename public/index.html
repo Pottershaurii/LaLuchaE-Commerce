@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>La Lucha E-Commerce</title>
+    <style>
+      body { font-family: Arial, sans-serif; margin: 2rem; }
+      section { margin-bottom: 2rem; }
+      ul { padding-left: 1.2rem; }
+      button { margin-left: 0.5rem; }
+      input { margin-right: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <h1>La Lucha Sanguchería — E-Commerce</h1>
+
+    <section>
+      <h2>Cliente: Menú</h2>
+      <div>
+        <label for="cartId">Carrito ID:</label>
+        <input id="cartId" type="text" />
+      </div>
+      <ul id="menu"></ul>
+    </section>
+
+    <section>
+      <h2>Cliente: Carrito</h2>
+      <ul id="cart"></ul>
+      <p>Total: S/ <span id="total">0.00</span></p>
+      <input id="customerName" type="text" placeholder="Nombre del cliente" />
+      <button id="placeOrder">Realizar pedido</button>
+      <p id="orderMessage"></p>
+    </section>
+
+    <section>
+      <h2>Admin: Inventario en tiempo real</h2>
+      <button id="refreshAdmin">Actualizar productos y pedidos</button>
+      <ul id="adminProducts"></ul>
+      <h3>Pedidos</h3>
+      <ul id="adminOrders"></ul>
+    </section>
+
+    <script>
+      const cartInput = document.getElementById('cartId');
+      const savedCartId = localStorage.getItem('lalucha-cart') || `cart-${Math.random().toString(36).slice(2, 8)}`;
+      cartInput.value = savedCartId;
+      localStorage.setItem('lalucha-cart', savedCartId);
+
+      const menuList = document.getElementById('menu');
+      const cartList = document.getElementById('cart');
+      const total = document.getElementById('total');
+      const adminProducts = document.getElementById('adminProducts');
+      const adminOrders = document.getElementById('adminOrders');
+      const orderMessage = document.getElementById('orderMessage');
+
+      cartInput.addEventListener('change', () => localStorage.setItem('lalucha-cart', cartInput.value));
+
+      async function request(path, options = {}) {
+        const res = await fetch(path, {
+          headers: { 'Content-Type': 'application/json' },
+          ...options
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error');
+        return data;
+      }
+
+      async function loadMenu() {
+        const { products } = await request('/api/menu');
+        menuList.innerHTML = '';
+        products.forEach((product) => {
+          const item = document.createElement('li');
+          item.textContent = `${product.name} — S/ ${product.price.toFixed(2)} (stock: ${product.stock})`;
+          const button = document.createElement('button');
+          button.textContent = 'Agregar';
+          button.onclick = async () => {
+            try {
+              await request('/api/cart/items', {
+                method: 'POST',
+                body: JSON.stringify({ cartId: cartInput.value.trim(), productId: product.id, quantity: 1 })
+              });
+              await Promise.all([loadMenu(), loadCart(), loadAdmin()]);
+            } catch (error) {
+              alert(error.message);
+            }
+          };
+          item.appendChild(button);
+          menuList.appendChild(item);
+        });
+      }
+
+      async function loadCart() {
+        const cartId = cartInput.value.trim();
+        if (!cartId) return;
+        const { cart } = await request(`/api/cart/${encodeURIComponent(cartId)}`);
+        cartList.innerHTML = '';
+        cart.items.forEach((item) => {
+          const li = document.createElement('li');
+          li.textContent = `${item.name} x${item.quantity} — S/ ${item.subtotal.toFixed(2)}`;
+          const remove = document.createElement('button');
+          remove.textContent = 'Quitar';
+          remove.onclick = async () => {
+            await request(`/api/cart/${encodeURIComponent(cartId)}/items/${encodeURIComponent(item.productId)}`, { method: 'DELETE' });
+            await loadCart();
+          };
+          li.appendChild(remove);
+          cartList.appendChild(li);
+        });
+        total.textContent = cart.total.toFixed(2);
+      }
+
+      async function loadAdmin() {
+        const [{ products }, { orders }] = await Promise.all([
+          request('/api/admin/products'),
+          request('/api/admin/orders')
+        ]);
+
+        adminProducts.innerHTML = '';
+        products.forEach((product) => {
+          const li = document.createElement('li');
+          li.textContent = `${product.name} | stock actual: ${product.stock}`;
+          const input = document.createElement('input');
+          input.type = 'number';
+          input.min = '0';
+          input.value = product.stock;
+          const btn = document.createElement('button');
+          btn.textContent = 'Actualizar stock';
+          btn.onclick = async () => {
+            await request(`/api/admin/inventory/${encodeURIComponent(product.id)}`, {
+              method: 'PATCH',
+              body: JSON.stringify({ stock: Number(input.value) })
+            });
+            await Promise.all([loadMenu(), loadAdmin()]);
+          };
+          li.appendChild(input);
+          li.appendChild(btn);
+          adminProducts.appendChild(li);
+        });
+
+        adminOrders.innerHTML = '';
+        orders.forEach((order) => {
+          const li = document.createElement('li');
+          li.textContent = `${order.customerName} - ${order.status} - S/ ${order.total.toFixed(2)}`;
+          adminOrders.appendChild(li);
+        });
+      }
+
+      document.getElementById('placeOrder').addEventListener('click', async () => {
+        try {
+          const { order } = await request('/api/orders', {
+            method: 'POST',
+            body: JSON.stringify({
+              cartId: cartInput.value.trim(),
+              customerName: document.getElementById('customerName').value.trim()
+            })
+          });
+          orderMessage.textContent = `Pedido ${order.id} creado exitosamente.`;
+          await Promise.all([loadMenu(), loadCart(), loadAdmin()]);
+        } catch (error) {
+          orderMessage.textContent = error.message;
+        }
+      });
+
+      document.getElementById('refreshAdmin').addEventListener('click', loadAdmin);
+      cartInput.addEventListener('change', loadCart);
+
+      Promise.all([loadMenu(), loadCart(), loadAdmin()]);
+    </script>
+  </body>
+</html>

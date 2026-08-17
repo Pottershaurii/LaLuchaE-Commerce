@@ -1,0 +1,10 @@
+{
+  "name": "lalucha-e-commerce",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plataforma e-commerce mínima para La Lucha Sanguchería",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  }
+}
