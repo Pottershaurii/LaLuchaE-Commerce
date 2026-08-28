@@ -1,0 +1,78 @@
+/* ========== RESPONSIVE: TABLET (≥768px) ========== */
+@media (min-width: 768px) {
+    .header-container {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 1.5rem;
+    }
+
+    .busqueda-container {
+        flex: 1 1 300px;
+        max-width: 400px;
+    }
+
+    .header-acciones {
+        gap: 1.5rem;
+        width: auto;
+    }
+
+    .grid-productos {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hero h1 {
+        font-size: 4rem;
+    }
+
+    .hero .descripcion {
+        font-size: 2.2rem;
+    }
+
+    .footer-container {
+        flex-direction: row;
+        justify-content: space-between;
+        text-align: left;
+    }
+
+    .navegacion-categorias ul {
+        gap: 2.5rem;
+    }
+}
+
+/* ========== RESPONSIVE: DESKTOP (≥1024px) ========== */
+@media (min-width: 1024px) {
+    .grid-productos {
+        grid-template-columns: repeat(3, 1fr);
+    }
+
+    .hero {
+        padding: 5rem 2rem;
+    }
+
+    .hero h1 {
+        font-size: 4.8rem;
+    }
+
+    .hero .descripcion {
+        font-size: 2.6rem;
+    }
+
+    .busqueda-container {
+        flex: 0 1 400px;
+    }
+}
+
+/* ========== RESPONSIVE: PANTALLAS GRANDES (≥1440px) ========== */
+@media (min-width: 1440px) {
+    .grid-productos {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .header-container,
+    .navegacion-categorias,
+    .grid-productos,
+    .grid-combos,
+    .beneficios-grid {
+        max-width: 1300px;
+    }
+}
