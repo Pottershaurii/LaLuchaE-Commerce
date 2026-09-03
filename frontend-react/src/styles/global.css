@@ -1,0 +1,30 @@
+/* ===== HERO ===== */
+
+.hero-section {
+  min-height: 510px;
+  display: flex;
+  align-items: center;
+  background:
+    radial-gradient(
+      circle at 45% 50%,
+      #2c2118 0%,
+      var(--color-primary) 55%
+    );
+  color: var(--color-light);
+}
+
+.hero-section h1 {
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 800;
+  text-transform: uppercase;
+  line-height: 0.95;
+}
+
+.hero-section .lead {
+  color: var(--color-gold-light);
+  font-size: 1.6rem;
+}
+
+.section-title {
+  color: var(--color-text);
+}
