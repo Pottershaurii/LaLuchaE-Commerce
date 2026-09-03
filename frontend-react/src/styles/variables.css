@@ -1,0 +1,54 @@
+:root {
+  /* ===== COLORES DE MARCA ===== */
+
+  /* Fondo oscuro principal */
+  --color-primary: #171614;
+
+  /* Fondo oscuro secundario */
+  --color-primary-soft: #211b16;
+
+  /* Dorado principal */
+  --color-gold: #d9972b;
+
+  /* Dorado claro */
+  --color-gold-light: #e8b04e;
+
+  /* Crema de las secciones claras */
+  --color-background: #f6f1e7;
+
+  /* Blanco cálido */
+  --color-light: #fffaf0;
+
+  /* Texto sobre fondo oscuro */
+  --color-text-light: #eee3cf;
+
+  /* Texto oscuro */
+  --color-text: #211d19;
+
+  /* Texto secundario */
+  --color-muted: #aa9d89;
+
+  /* Bordes dorados */
+  --color-border: #6f4a16;
+
+
+  /* ===== TIPOGRAFÍA ===== */
+
+  --font-primary: Arial, Helvetica, sans-serif;
+
+
+  /* ===== BORDES ===== */
+
+  --radius-sm: 6px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+
+  /* ===== ESPACIADOS ===== */
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 48px;
+}

@@ -1,0 +1,51 @@
+/* ===== NAVBAR ===== */
+
+.navbar {
+  background-color: var(--color-primary) !important;
+  border-bottom: 1px solid #302a24;
+}
+
+.navbar-brand {
+  color: var(--color-light) !important;
+}
+
+.navbar .nav-link {
+  color: var(--color-text-light) !important;
+  font-weight: 600;
+  margin: 0 10px;
+}
+
+.navbar .nav-link:hover {
+  color: var(--color-gold) !important;
+}
+
+
+/* ===== BOTONES ===== */
+
+.btn-primary {
+  background-color: var(--color-gold);
+  border-color: var(--color-gold);
+  color: var(--color-primary);
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: var(--radius-sm);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-gold-light);
+  border-color: var(--color-gold-light);
+  color: var(--color-primary);
+}
+
+
+/* ===== TARJETAS ===== */
+
+.card {
+  border: none;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.card-title {
+  font-weight: 700;
+}
