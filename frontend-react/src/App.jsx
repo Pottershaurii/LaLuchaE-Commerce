@@ -1,105 +1,128 @@
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
-import Navbar from './components/Navbar/Navbar'
+import { Button, Col, Container, Row } from 'react-bootstrap'
+
+import {
+  LuSandwich,
+  LuUtensils,
+  LuCupSoda,
+  LuIceCreamCone
+} from 'react-icons/lu'
+
+import { PiDrop } from 'react-icons/pi'
+
+import Navbar from './components/Navbar/Navbar/Navbar.jsx'
+import Catalogo from './pages/Catalogo.jsx'
+import heroImg from './assets/images/hero-sanguche.jpg'
+
 
 function App() {
   return (
     <>
+      {/* ================= NAVBAR ================= */}
       <Navbar />
+
 
       <main>
 
-        {/* HERO */}
-        <section className="hero-section py-5">
-          <Container className="py-5">
-
-            <p className="text-uppercase fw-bold text-danger">
-              La Lucha Sanguchería Criolla
-            </p>
-
-            <h1 className="display-3 fw-bold">
-              Sánguches Criollos
-            </h1>
-
-            <p className="lead mb-4">
-              El sabor que nos representa.
-            </p>
-
-            <Button variant="primary">
-              Ver carta
-            </Button>
-
-          </Container>
-        </section>
-
-
-        {/* PRODUCTOS */}
-        <section
-          id="productos"
-          className="py-5"
-        >
+        {/* ================= HERO ================= */}
+        <section className="hero-section">
 
           <Container>
 
-            <h2 className="section-title">
-              Nuestros favoritos
-            </h2>
+            <Row className="align-items-center g-5">
 
-            <Row className="g-4">
+              {/* ---------- TEXTO ---------- */}
+              <Col xs={12} lg={6}>
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Sánguche de Chicharrón
-                    </Card.Title>
+                <span className="hero-badge">
+                  ESPECIALIDAD LA LUCHA
+                </span>
 
-                    <Card.Text>
-                      Un clásico de La Lucha.
-                    </Card.Text>
 
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
+                <h1 className="hero-title">
+                  SÁNGUCHES
+                  <br />
+                  CRIOLLOS
+                </h1>
+
+
+                <h2 className="hero-script">
+                  Hechos como en casa
+                </h2>
+
+
+                <p className="hero-description">
+                  Tradición criolla horneada diariamente, carnes jugosas
+                  seleccionadas y la infaltable sarza criolla.
+                </p>
+
+
+                <div className="d-flex flex-wrap gap-3">
+
+                  <Button
+                    href="#catalogo"
+                    className="btn-hero-primary"
+                  >
+                    Ver menú
+                  </Button>
+
+
+                  <Button
+                    href="#promociones"
+                    className="btn-hero-secondary"
+                  >
+                    Promociones del día
+                  </Button>
+
+                </div>
+
               </Col>
 
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Sánguche de Pollo
-                    </Card.Title>
+              {/* ---------- IMAGEN ---------- */}
+              <Col xs={12} lg={6}>
 
-                    <Card.Text>
-                      Preparado con ingredientes seleccionados.
-                    </Card.Text>
+                <div className="hero-image-container">
 
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
+                  <img
+                    src={heroImg}
+                    alt="Sánguche criollo La Lucha"
+                    className="hero-image"
+                  />
 
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Jugo Natural
-                    </Card.Title>
+                  {/* FLECHA IZQUIERDA */}
+                  <button
+                    type="button"
+                    className="hero-arrow hero-arrow-left"
+                    aria-label="Imagen anterior"
+                  >
+                    ‹
+                  </button>
 
-                    <Card.Text>
-                      El acompañamiento ideal.
-                    </Card.Text>
 
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
+                  {/* FLECHA DERECHA */}
+                  <button
+                    type="button"
+                    className="hero-arrow hero-arrow-right"
+                    aria-label="Imagen siguiente"
+                  >
+                    ›
+                  </button>
+
+                </div>
+
+
+                {/* INDICADORES DEL CARRUSEL */}
+                <div className="hero-dots">
+
+                  <span className="hero-dot active"></span>
+
+                  <span className="hero-dot"></span>
+
+                  <span className="hero-dot"></span>
+
+                </div>
+
               </Col>
 
             </Row>
@@ -108,9 +131,138 @@ function App() {
 
         </section>
 
+
+
+        {/* ================= CATEGORÍAS ================= */}
+        <section className="categorias-section">
+
+          <Container>
+
+            {/* TÍTULO */}
+            <div className="categorias-header">
+
+              <h2>
+                Categorías
+              </h2>
+
+              <a href="#catalogo">
+                Ver todas
+              </a>
+
+            </div>
+
+
+            {/* LISTA DE CATEGORÍAS */}
+            <div className="categorias-list">
+
+
+              {/* SÁNGUCHES */}
+              <a
+                href="#catalogo"
+                className="categoria-item active"
+              >
+
+                <div className="categoria-icon">
+                  <LuSandwich />
+                </div>
+
+                <span>
+                  Sánguches
+                </span>
+
+              </a>
+
+
+
+              {/* COMBOS */}
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+
+                <div className="categoria-icon">
+                  <LuUtensils />
+                </div>
+
+                <span>
+                  Combos
+                </span>
+
+              </a>
+
+
+
+              {/* BEBIDAS */}
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+
+                <div className="categoria-icon">
+                  <LuCupSoda />
+                </div>
+
+                <span>
+                  Bebidas
+                </span>
+
+              </a>
+
+
+
+              {/* EXTRAS */}
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+
+                <div className="categoria-icon">
+                  <PiDrop />
+                </div>
+
+                <span>
+                  Extras
+                </span>
+
+              </a>
+
+
+
+              {/* POSTRES */}
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+
+                <div className="categoria-icon">
+                  <LuIceCreamCone />
+                </div>
+
+                <span>
+                  Postres
+                </span>
+
+              </a>
+
+            </div>
+
+          </Container>
+
+        </section>
+
+
+
+        {/* ================= CATÁLOGO ================= */}
+        <section id="catalogo">
+
+          <Catalogo />
+
+        </section>
+
       </main>
     </>
   )
 }
+
 
 export default App
