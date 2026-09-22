@@ -49,3 +49,286 @@
 .card-title {
   font-weight: 700;
 }
+
+/* ========================================
+   CATEGORÍAS - LA LUCHA
+======================================== */
+
+.categorias-section {
+  background: #f8f4eb;
+  padding: 30px 0 42px;
+  border-bottom: 1px solid #e5ddce;
+}
+
+.categorias-section .container {
+  max-width: 1320px;
+}
+
+.categorias-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+}
+
+.categorias-header h2 {
+  margin: 0;
+  color: #171411;
+  font-size: 25px;
+  font-weight: 800;
+}
+
+.categorias-header a {
+  color: #8f2d12;
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: 0.2s ease;
+}
+
+.categorias-header a:hover {
+  color: #c88927;
+}
+
+/* CONTENEDOR DE LOS 5 ELEMENTOS */
+.categorias-list {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 32px;
+}
+
+/* CADA CATEGORÍA */
+.categoria-item {
+  width: 92px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  color: #211b17;
+  text-decoration: none;
+
+  cursor: pointer;
+}
+
+.categoria-item:hover {
+  color: #8f2d12;
+}
+
+/* CÍRCULOS */
+.categoria-icon {
+  width: 88px;
+  height: 88px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #f3ead8;
+  border: 2px solid #ded0b5;
+  border-radius: 50%;
+
+  color: #29221e;
+  font-size: 29px;
+
+  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.08);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.categoria-item:hover .categoria-icon {
+  transform: translateY(-3px);
+  border-color: #d59a39;
+}
+
+/* CATEGORÍA ACTIVA */
+.categoria-item.active .categoria-icon {
+  background: #efb75c;
+  border-color: #d48c1d;
+
+  box-shadow:
+    0 0 0 4px #f1dfbd,
+    0 2px 4px rgba(0, 0, 0, 0.12);
+}
+
+.categoria-item.active span {
+  color: #9c3215;
+}
+
+/* TEXTO */
+.categoria-item span {
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+/* ========================================
+   RESPONSIVE
+======================================== */
+
+@media (max-width: 768px) {
+
+  .categorias-section {
+    padding: 25px 0 30px;
+  }
+
+  .categorias-header {
+    margin-bottom: 22px;
+  }
+
+  .categorias-header h2 {
+    font-size: 22px;
+  }
+
+  .categorias-list {
+    justify-content: flex-start;
+    gap: 20px;
+
+    overflow-x: auto;
+    padding: 5px 5px 15px;
+
+    scrollbar-width: thin;
+  }
+
+  .categoria-item {
+    min-width: 78px;
+  }
+
+  .categoria-icon {
+    width: 72px;
+    height: 72px;
+    font-size: 24px;
+  }
+
+  .categoria-item span {
+    font-size: 13px;
+  }
+}
+/* ===== IMAGEN HERO ===== */
+
+.hero-image-container {
+  position: relative;
+  width: 100%;
+  max-width: 570px;
+  margin: 0 auto;
+}
+
+.hero-image {
+  width: 100%;
+  height: 420px;
+  object-fit: cover;
+
+  display: block;
+
+  border-radius: 16px;
+  border: 1px solid #805714;
+}
+
+/* ===== FLECHAS ===== */
+
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0;
+
+  border: 1px solid #805714;
+  border-radius: 50%;
+
+  background: #171513;
+  color: #f2bd42;
+
+  font-size: 35px;
+  font-weight: 300;
+  line-height: 1;
+
+  cursor: pointer;
+
+  z-index: 5;
+
+  transition: 0.2s ease;
+}
+
+.hero-arrow:hover {
+  background: #d79328;
+  color: #171513;
+}
+
+/* Flecha izquierda sobresaliendo de la imagen */
+.hero-arrow-left {
+  left: -24px;
+}
+
+/* Flecha derecha sobresaliendo de la imagen */
+.hero-arrow-right {
+  right: -24px;
+}
+
+/* ===== INDICADORES ===== */
+
+.hero-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 9px;
+
+  margin-top: 34px;
+}
+
+.hero-dot {
+  display: block;
+
+  width: 11px;
+  height: 11px;
+
+  border-radius: 50%;
+
+  background: #746a45;
+}
+
+.hero-dot.active {
+  width: 35px;
+  border-radius: 20px;
+
+  background: #d79328;
+}
+
+/* ===== CELULAR ===== */
+
+@media (max-width: 768px) {
+
+  .hero-image {
+    height: 300px;
+  }
+
+  .hero-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: 29px;
+  }
+
+  .hero-arrow-left {
+    left: 8px;
+  }
+
+  .hero-arrow-right {
+    right: 8px;
+  }
+
+  .hero-dots {
+    margin-top: 20px;
+  }
+}
