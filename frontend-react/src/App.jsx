@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Button, Col, Container, Row, Modal } from 'react-bootstrap'
+import { Button, Col, Container, Row } from 'react-bootstrap'
 
 import {
   LuSandwich,
@@ -11,34 +11,71 @@ import {
 import { PiDrop } from 'react-icons/pi'
 
 import Navbar from './components/Navbar/Navbar/Navbar.jsx'
-import RegisterForm from './components/Auth/RegisterForm'
-import EmailVerificationNotice from './components/Auth/EmailVerificationNotice'
+import Login from './pages/Login.jsx'
+import RegisterForm from './components/Auth/RegisterForm.jsx'
+import EmailVerificationNotice from './components/Auth/EmailVerificationNotice.jsx'
 import Catalogo from './pages/Catalogo.jsx'
+
 import heroImg from './assets/images/hero-sanguche.jpg'
 
 function App() {
-  // Controla el modal de registro
-  const [showAuthModal, setShowAuthModal] = useState(false)
+  // null = ninguna pantalla
+  // login = inicio de sesión
+  // register = registro
+  // verify = verificación de correo
+  const [authView, setAuthView] = useState(null)
 
-  // Guarda el correo después del registro para pasar a la verificación
   const [registeredEmail, setRegisteredEmail] = useState(null)
 
-  const handleCloseModal = () => {
-    setShowAuthModal(false)
+  // =========================
+  // ABRIR LOGIN
+  // =========================
+  const handleOpenAuth = () => {
+    setAuthView('login')
     setRegisteredEmail(null)
   }
 
-  const handleOpenModal = () => {
-    setShowAuthModal(true)
+  // =========================
+  // CERRAR AUTENTICACIÓN
+  // =========================
+  const handleCloseAuth = () => {
+    setAuthView(null)
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // ABRIR REGISTRO
+  // =========================
+  const handleOpenRegister = () => {
+    setAuthView('register')
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // REGRESAR AL LOGIN
+  // =========================
+  const handleOpenLogin = () => {
+    setAuthView('login')
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // REGISTRO EXITOSO
+  // =========================
+  const handleRegisterSuccess = (email) => {
+    setRegisteredEmail(email)
+    setAuthView('verify')
   }
 
   return (
     <>
       {/* ================= NAVBAR ================= */}
-      <Navbar onOpenAuth={handleOpenModal} />
+
+      <Navbar onOpenAuth={handleOpenAuth} />
 
       <main>
         {/* ================= HERO ================= */}
+
         <section className="hero-section">
           <Container>
             <Row className="align-items-center g-5">
@@ -117,6 +154,7 @@ function App() {
         </section>
 
         {/* ================= CATEGORÍAS ================= */}
+
         <section className="categorias-section">
           <Container>
 
@@ -137,6 +175,7 @@ function App() {
                 <div className="categoria-icon">
                   <LuSandwich />
                 </div>
+
                 <span>Sánguches</span>
               </a>
 
@@ -147,6 +186,7 @@ function App() {
                 <div className="categoria-icon">
                   <LuUtensils />
                 </div>
+
                 <span>Combos</span>
               </a>
 
@@ -157,6 +197,7 @@ function App() {
                 <div className="categoria-icon">
                   <LuCupSoda />
                 </div>
+
                 <span>Bebidas</span>
               </a>
 
@@ -167,6 +208,7 @@ function App() {
                 <div className="categoria-icon">
                   <PiDrop />
                 </div>
+
                 <span>Extras</span>
               </a>
 
@@ -177,48 +219,69 @@ function App() {
                 <div className="categoria-icon">
                   <LuIceCreamCone />
                 </div>
+
                 <span>Postres</span>
               </a>
 
             </div>
+
           </Container>
         </section>
 
         {/* ================= CATÁLOGO ================= */}
+
         <section id="catalogo">
           <Catalogo />
         </section>
       </main>
 
-      {/* ================= REGISTRO HU02 ================= */}
-      <Modal
-        show={showAuthModal}
-        onHide={handleCloseModal}
-        centered
-        backdrop="static"
-        contentClassName="bg-transparent border-0"
-      >
-        <Modal.Header
-          closeButton
-          closeVariant="white"
-          className="border-0 pb-0"
-          style={{
-            backgroundColor: 'var(--color-primary-soft)'
-          }}
-        />
+      {/* ================= LOGIN ================= */}
 
-        <Modal.Body className="p-0">
-          {!registeredEmail ? (
-            <RegisterForm
-              onSuccess={(email) => setRegisteredEmail(email)}
-            />
-          ) : (
+      {authView === 'login' && (
+        <Login
+          onClose={handleCloseAuth}
+          onRegister={handleOpenRegister}
+        />
+      )}
+
+      {/* ================= REGISTRO ================= */}
+
+      {authView === 'register' && (
+        <div className="auth-overlay">
+
+          <RegisterForm
+            onSuccess={handleRegisterSuccess}
+            onClose={handleCloseAuth}
+            onLogin={() => setAuthView('login')}
+          />
+
+        </div>
+      )}
+
+      {/* ================= VERIFICACIÓN ================= */}
+
+      {authView === 'verify' && registeredEmail && (
+        <div className="auth-overlay">
+
+          <div className="auth-register-container">
+
+            <button
+              type="button"
+              className="auth-close-button"
+              onClick={handleCloseAuth}
+              aria-label="Cerrar verificación"
+            >
+              ×
+            </button>
+
             <EmailVerificationNotice
               email={registeredEmail}
             />
-          )}
-        </Modal.Body>
-      </Modal>
+
+          </div>
+
+        </div>
+      )}
     </>
   )
 }

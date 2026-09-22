@@ -1,10 +1,17 @@
-import { Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
+import {
+  Container,
+  Nav,
+  Navbar as BootstrapNavbar,
+  Button
+} from 'react-bootstrap'
 
-function Navbar() {
+function Navbar({ onOpenAuth }) {
   return (
-    <BootstrapNavbar expand="lg" bg="light" className="py-3 shadow-sm">
+    <BootstrapNavbar
+      expand="lg"
+      className="lalucha-navbar"
+    >
       <Container>
-
         <BootstrapNavbar.Brand
           href="#"
           className="fw-bold fs-3"
@@ -12,16 +19,18 @@ function Navbar() {
           LA LUCHA
         </BootstrapNavbar.Brand>
 
-        <BootstrapNavbar.Toggle />
+        <BootstrapNavbar.Toggle
+          aria-controls="lalucha-navbar"
+        />
 
-        <BootstrapNavbar.Collapse>
-          <Nav className="ms-auto fw-semibold">
+        <BootstrapNavbar.Collapse id="lalucha-navbar">
+          <Nav className="ms-auto align-items-lg-center fw-semibold gap-lg-3">
 
             <Nav.Link href="#">
               Inicio
             </Nav.Link>
 
-            <Nav.Link href="#productos">
+            <Nav.Link href="#catalogo">
               Carta
             </Nav.Link>
 
@@ -33,9 +42,17 @@ function Navbar() {
               Carrito
             </Nav.Link>
 
+            <Button
+              type="button"
+              variant="outline-warning"
+              className="ms-lg-2"
+              onClick={onOpenAuth}
+            >
+              Registrarse
+            </Button>
+
           </Nav>
         </BootstrapNavbar.Collapse>
-
       </Container>
     </BootstrapNavbar>
   )

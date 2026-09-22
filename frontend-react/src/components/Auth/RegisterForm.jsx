@@ -1,58 +1,261 @@
-import { useState } from 'react';
-import { Form, Button, Alert, Card, Spinner } from 'react-bootstrap';
-import { registerClient } from '../../services/authService';
+import { useState } from 'react'
+import { registerClient } from '../../services/authService'
+import '../../styles/register.css'
+import logo from '../../assets/images/logo.png'
 
-function RegisterForm({ onSuccess }) {
-  const [formData, setFormData] = useState({ nombre: '', email: '', password: '', telefono: '' });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+function RegisterForm({ onSuccess, onClose, onLogin }) {
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    password: ''
+  })
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  const [mostrarPassword, setMostrarPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  const handleChange = (e) => {
+    const { name, value } = e.target
+
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value
+    }))
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+    e.preventDefault()
+
+    setError('')
+    setLoading(true)
 
     try {
-      await registerClient(formData);
-      onSuccess(formData.email);
+      await registerClient(formData)
+
+      if (onSuccess) {
+        onSuccess(formData.email)
+      }
     } catch (err) {
-      setError(err.message);
+      setError(
+        err.message || 'No se pudo completar el registro.'
+      )
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
-    <Card className="shadow-lg border-0 p-4" style={{ backgroundColor: 'var(--color-primary-soft)', color: 'var(--color-light)' }}>
-      <Card.Body>
-        <h3 className="fw-bold mb-4 text-center" style={{ color: 'var(--color-gold)' }}>Crea tu Cuenta</h3>
-        {error && <Alert variant="danger">{error}</Alert>}
-        <Form onSubmit={handleSubmit}>
-          <Form.Group className="mb-3">
-            <Form.Label>Nombre Completo</Form.Label>
-            <Form.Control type="text" name="nombre" placeholder="Ej. Juan Pérez" value={formData.nombre} onChange={handleChange} required />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Correo Electrónico</Form.Label>
-            <Form.Control type="email" name="email" placeholder="correo@ejemplo.com" value={formData.email} onChange={handleChange} required />
-          </Form.Group>
-          <Form.Group className="mb-3">
-            <Form.Label>Teléfono</Form.Label>
-            <Form.Control type="tel" name="telefono" placeholder="987654321" value={formData.telefono} onChange={handleChange} required />
-          </Form.Group>
-          <Form.Group className="mb-4">
-            <Form.Label>Contraseña</Form.Label>
-            <Form.Control type="password" name="password" placeholder="Mínimo 6 caracteres" value={formData.password} onChange={handleChange} required minLength={6} />
-          </Form.Group>
-          <Button variant="primary" type="submit" className="w-100 py-2 fw-bold" disabled={loading}>
-            {loading ? <Spinner animation="border" size="sm" /> : 'REGISTRARME'}
-          </Button>
-        </Form>
-      </Card.Body>
-    </Card>
-  );
+    <div className="register-layout">
+
+      <button
+        type="button"
+        className="register-modal-close"
+        onClick={onClose}
+        aria-label="Cerrar registro"
+      >
+        ×
+      </button>
+
+      <div className="register-brand-panel">
+
+        <div className="register-brand-content">
+
+          <div className="register-main-logo">
+            <img
+              src={logo}
+              alt="La Lucha Sanguchería Criolla"
+            />
+          </div>
+
+          <h2>
+            SABOR QUE NOS UNE
+          </h2>
+
+          <p>
+            Criollo de corazón
+          </p>
+
+        </div>
+
+        <span className="register-copyright">
+          LA LUCHA SANGUCHERÍA CRIOLLA © 2026
+        </span>
+
+      </div>
+
+      <div className="register-form-panel">
+
+        <div className="register-small-logo">
+          <img
+            src={logo}
+            alt="La Lucha"
+          />
+        </div>
+
+        <h1>
+          Crear una cuenta
+        </h1>
+
+        <p className="register-subtitle">
+          Completa tus datos para disfrutar promociones exclusivas
+        </p>
+
+        <form onSubmit={handleSubmit}>
+
+          <div className="register-field">
+
+            <label htmlFor="nombre">
+              Nombre completo
+            </label>
+
+            <div className="register-input">
+
+              <input
+                id="nombre"
+                name="nombre"
+                type="text"
+                placeholder="Ej. Juan Pérez"
+                value={formData.nombre}
+                onChange={handleChange}
+                autoComplete="name"
+                required
+              />
+
+            </div>
+
+          </div>
+
+          <div className="register-field">
+
+            <label htmlFor="email">
+              Correo electrónico
+            </label>
+
+            <div className="register-input">
+
+              <span className="register-input-icon">
+                ✉
+              </span>
+
+              <input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="correo@ejemplo.com"
+                value={formData.email}
+                onChange={handleChange}
+                autoComplete="email"
+                required
+              />
+
+            </div>
+
+          </div>
+
+          <div className="register-field">
+
+            <label htmlFor="password">
+              Contraseña
+            </label>
+
+            <div className="register-input">
+
+              <span className="register-input-icon">
+                ♙
+              </span>
+
+              <input
+                id="password"
+                name="password"
+                type={mostrarPassword ? 'text' : 'password'}
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={handleChange}
+                autoComplete="new-password"
+                minLength="6"
+                required
+              />
+
+              <button
+                type="button"
+                className="register-password-toggle"
+                onClick={() =>
+                  setMostrarPassword(!mostrarPassword)
+                }
+                aria-label={
+                  mostrarPassword
+                    ? 'Ocultar contraseña'
+                    : 'Mostrar contraseña'
+                }
+              >
+                {mostrarPassword ? '◉' : '◎'}
+              </button>
+
+            </div>
+
+          </div>
+
+          {error && (
+            <div className="register-error">
+              {error}
+            </div>
+          )}
+
+          <button
+            type="submit"
+            className="register-submit"
+            disabled={loading}
+          >
+            {loading
+              ? 'Registrando...'
+              : 'Registrarme'}
+          </button>
+
+        </form>
+
+        <div className="register-separator">
+          <span>
+            O CONTINÚA CON
+          </span>
+        </div>
+
+        <div className="register-social">
+
+          <button
+            type="button"
+            className="register-google"
+          >
+            <strong>G</strong>
+            Google
+          </button>
+
+          <button
+            type="button"
+            className="register-facebook"
+          >
+            <strong>f</strong>
+            Facebook
+          </button>
+
+        </div>
+
+        <p className="register-login-text">
+
+          ¿Ya tienes una cuenta?{' '}
+
+          <button
+            type="button"
+            onClick={onLogin}
+          >
+            Inicia sesión aquí
+          </button>
+
+        </p>
+
+      </div>
+
+    </div>
+  )
 }
 
-export default RegisterForm;
+export default RegisterForm
