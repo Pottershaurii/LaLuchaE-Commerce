@@ -1,3 +1,4 @@
+import { Routes, Route } from 'react-router-dom'
 import { Button, Col, Container, Row } from 'react-bootstrap'
 
 import {
@@ -11,32 +12,27 @@ import { PiDrop } from 'react-icons/pi'
 
 import Navbar from './components/Navbar/Navbar/Navbar.jsx'
 import Catalogo from './pages/Catalogo.jsx'
+import Login from './pages/Login.jsx'
 import heroImg from './assets/images/hero-sanguche.jpg'
 
 
-function App() {
+function Home() {
   return (
     <>
       {/* ================= NAVBAR ================= */}
       <Navbar />
 
-
       <main>
-
         {/* ================= HERO ================= */}
         <section className="hero-section">
-
           <Container>
-
             <Row className="align-items-center g-5">
 
               {/* ---------- TEXTO ---------- */}
               <Col xs={12} lg={6}>
-
                 <span className="hero-badge">
                   ESPECIALIDAD LA LUCHA
                 </span>
-
 
                 <h1 className="hero-title">
                   SÁNGUCHES
@@ -44,20 +40,16 @@ function App() {
                   CRIOLLOS
                 </h1>
 
-
                 <h2 className="hero-script">
                   Hechos como en casa
                 </h2>
-
 
                 <p className="hero-description">
                   Tradición criolla horneada diariamente, carnes jugosas
                   seleccionadas y la infaltable sarza criolla.
                 </p>
 
-
                 <div className="d-flex flex-wrap gap-3">
-
                   <Button
                     href="#catalogo"
                     className="btn-hero-primary"
@@ -65,32 +57,24 @@ function App() {
                     Ver menú
                   </Button>
 
-
                   <Button
                     href="#promociones"
                     className="btn-hero-secondary"
                   >
                     Promociones del día
                   </Button>
-
                 </div>
-
               </Col>
-
 
               {/* ---------- IMAGEN ---------- */}
               <Col xs={12} lg={6}>
-
                 <div className="hero-image-container">
-
                   <img
                     src={heroImg}
                     alt="Sánguche criollo La Lucha"
                     className="hero-image"
                   />
 
-
-                  {/* FLECHA IZQUIERDA */}
                   <button
                     type="button"
                     className="hero-arrow hero-arrow-left"
@@ -99,8 +83,6 @@ function App() {
                     ‹
                   </button>
 
-
-                  {/* FLECHA DERECHA */}
                   <button
                     type="button"
                     className="hero-arrow hero-arrow-right"
@@ -108,70 +90,43 @@ function App() {
                   >
                     ›
                   </button>
-
                 </div>
 
-
-                {/* INDICADORES DEL CARRUSEL */}
                 <div className="hero-dots">
-
                   <span className="hero-dot active"></span>
-
                   <span className="hero-dot"></span>
-
                   <span className="hero-dot"></span>
-
                 </div>
-
               </Col>
-
             </Row>
-
           </Container>
-
         </section>
-
-
 
         {/* ================= CATEGORÍAS ================= */}
         <section className="categorias-section">
-
           <Container>
 
-            {/* TÍTULO */}
             <div className="categorias-header">
-
-              <h2>
-                Categorías
-              </h2>
+              <h2>Categorías</h2>
 
               <a href="#catalogo">
                 Ver todas
               </a>
-
             </div>
 
-
-            {/* LISTA DE CATEGORÍAS */}
             <div className="categorias-list">
-
 
               {/* SÁNGUCHES */}
               <a
                 href="#catalogo"
                 className="categoria-item active"
               >
-
                 <div className="categoria-icon">
                   <LuSandwich />
                 </div>
 
-                <span>
-                  Sánguches
-                </span>
-
+                <span>Sánguches</span>
               </a>
-
 
 
               {/* COMBOS */}
@@ -179,17 +134,12 @@ function App() {
                 href="#catalogo"
                 className="categoria-item"
               >
-
                 <div className="categoria-icon">
                   <LuUtensils />
                 </div>
 
-                <span>
-                  Combos
-                </span>
-
+                <span>Combos</span>
               </a>
-
 
 
               {/* BEBIDAS */}
@@ -197,17 +147,12 @@ function App() {
                 href="#catalogo"
                 className="categoria-item"
               >
-
                 <div className="categoria-icon">
                   <LuCupSoda />
                 </div>
 
-                <span>
-                  Bebidas
-                </span>
-
+                <span>Bebidas</span>
               </a>
-
 
 
               {/* EXTRAS */}
@@ -215,17 +160,12 @@ function App() {
                 href="#catalogo"
                 className="categoria-item"
               >
-
                 <div className="categoria-icon">
                   <PiDrop />
                 </div>
 
-                <span>
-                  Extras
-                </span>
-
+                <span>Extras</span>
               </a>
-
 
 
               {/* POSTRES */}
@@ -233,30 +173,21 @@ function App() {
                 href="#catalogo"
                 className="categoria-item"
               >
-
                 <div className="categoria-icon">
                   <LuIceCreamCone />
                 </div>
 
-                <span>
-                  Postres
-                </span>
-
+                <span>Postres</span>
               </a>
 
             </div>
-
           </Container>
-
         </section>
-
 
 
         {/* ================= CATÁLOGO ================= */}
         <section id="catalogo">
-
           <Catalogo />
-
         </section>
 
       </main>
@@ -264,5 +195,26 @@ function App() {
   )
 }
 
+
+function App() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Home />}
+      />
+
+      <Route
+        path="/login"
+        element={
+          <>
+            <Home />
+            <Login />
+          </>
+        }
+      />
+    </Routes>
+  )
+}
 
 export default App

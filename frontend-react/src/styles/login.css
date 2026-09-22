@@ -1,0 +1,755 @@
+/* ========================================
+   LOGIN - LA LUCHA
+======================================== */
+
+.login-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 30px;
+
+  background: rgba(0, 0, 0, 0.68);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+}
+
+
+/* ========================================
+   MODAL
+======================================== */
+
+.login-modal {
+  width: min(920px, 94vw);
+  min-height: 610px;
+
+  display: grid;
+  grid-template-columns: 42% 58%;
+
+  overflow: hidden;
+
+  background: #f7f3eb;
+
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.35);
+}
+
+
+/* ========================================
+   PANEL IZQUIERDO
+======================================== */
+
+.login-brand-panel {
+  position: relative;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 50px 40px;
+
+  background: #1b1917;
+  color: #ffffff;
+
+  text-align: center;
+}
+
+
+.login-brand-content {
+  width: 100%;
+  transform: translateY(-20px);
+}
+
+
+/* ========================================
+   LOGO GRANDE
+======================================== */
+
+.login-main-logo {
+  width: 145px;
+  height: 145px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 0 auto 30px;
+
+  overflow: hidden;
+
+  border: 4px solid #c88a2b;
+  border-radius: 50%;
+
+  background: #1b1917;
+}
+
+
+/* IMAGEN DEL LOGO GRANDE */
+
+.login-main-logo img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 145px;
+  max-height: 145px;
+
+  object-fit: cover;
+  object-position: center;
+
+  border-radius: 50%;
+}
+
+
+/* ========================================
+   TEXTO PANEL IZQUIERDO
+======================================== */
+
+.login-brand-panel h2 {
+  margin: 0;
+
+  font-family: Georgia, 'Times New Roman', serif;
+
+  font-size: 27px;
+  font-weight: 700;
+  letter-spacing: 1px;
+
+  color: #ffffff;
+}
+
+
+.login-brand-panel p {
+  margin-top: 10px;
+
+  color: #d79530;
+
+  font-size: 20px;
+  font-style: italic;
+  font-weight: 600;
+}
+
+
+.login-copyright {
+  position: absolute;
+
+  bottom: 32px;
+  left: 0;
+
+  width: 100%;
+
+  color: #9d7b3f;
+
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 1px;
+
+  text-align: center;
+}
+
+
+/* ========================================
+   PANEL DERECHO
+======================================== */
+
+.login-form-panel {
+  position: relative;
+
+  padding: 42px 42px 32px;
+
+  background: #f7f3eb;
+}
+
+
+/* ========================================
+   BOTÓN CERRAR
+======================================== */
+
+.login-close {
+  position: absolute;
+
+  top: 18px;
+  right: 18px;
+
+  z-index: 10;
+
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  border-radius: 50%;
+
+  background: #ffffff;
+  color: #8d9399;
+
+  text-decoration: none;
+
+  font-size: 27px;
+  font-weight: 300;
+  line-height: 1;
+
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+
+.login-close:hover {
+  background: #f4eee5;
+  color: #1b1917;
+
+  transform: scale(1.05);
+}
+
+
+/* ========================================
+   LOGO PEQUEÑO
+======================================== */
+
+.login-small-logo {
+  width: 55px;
+  height: 55px;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  margin: 0 auto 12px;
+
+  overflow: hidden;
+
+  border: 3px solid #c88a2b;
+  border-radius: 50%;
+
+  background: #1b1917;
+}
+
+
+/* IMAGEN DEL LOGO PEQUEÑO */
+
+.login-small-logo img {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  max-width: 55px;
+  max-height: 55px;
+
+  object-fit: cover;
+  object-position: center;
+
+  border-radius: 50%;
+}
+
+
+/* ========================================
+   TÍTULO
+======================================== */
+
+.login-form-panel h1 {
+  margin: 0;
+
+  color: #1b1917;
+
+  text-align: center;
+
+  font-size: 25px;
+  font-weight: 800;
+}
+
+
+.login-subtitle {
+  margin: 7px 0 28px;
+
+  color: #817970;
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+
+/* ========================================
+   FORMULARIO
+======================================== */
+
+.login-field {
+  margin-bottom: 16px;
+}
+
+
+.login-field label {
+  display: block;
+
+  margin-bottom: 6px;
+
+  color: #4c4540;
+
+  font-size: 13px;
+  font-weight: 600;
+}
+
+
+/* ========================================
+   INPUT
+======================================== */
+
+.login-input {
+  width: 100%;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 0 14px;
+
+  border: 1px solid #d9cdb9;
+  border-radius: 11px;
+
+  background: #eee6d7;
+
+  box-sizing: border-box;
+}
+
+
+.login-input > span {
+  flex-shrink: 0;
+
+  margin-right: 12px;
+
+  color: #8e8376;
+}
+
+
+.login-input input {
+  flex: 1;
+
+  width: 100%;
+  min-width: 0;
+
+  border: 0;
+  outline: 0;
+
+  background: transparent;
+
+  color: #292521;
+
+  font-size: 14px;
+}
+
+
+.login-input input::placeholder {
+  color: #9e978e;
+}
+
+
+/* ========================================
+   MOSTRAR CONTRASEÑA
+======================================== */
+
+.password-toggle {
+  flex-shrink: 0;
+
+  border: 0;
+
+  padding: 5px;
+
+  background: transparent;
+  color: #8e8376;
+
+  cursor: pointer;
+}
+
+
+/* ========================================
+   OPCIONES
+======================================== */
+
+.login-options {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  margin: 6px 0 24px;
+
+  font-size: 12px;
+}
+
+
+.remember-option {
+  display: flex;
+  align-items: center;
+
+  gap: 8px;
+
+  color: #5d554e;
+
+  cursor: pointer;
+}
+
+
+.remember-option input {
+  accent-color: #d18b21;
+
+  cursor: pointer;
+}
+
+
+.forgot-password {
+  border: 0;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #9a3b25;
+
+  font-size: 12px;
+
+  cursor: pointer;
+}
+
+
+.forgot-password:hover {
+  text-decoration: underline;
+}
+
+
+/* ========================================
+   MENSAJE
+======================================== */
+
+.login-message {
+  margin-bottom: 12px;
+
+  color: #9a3b25;
+
+  text-align: center;
+
+  font-size: 13px;
+}
+
+
+/* ========================================
+   BOTÓN INICIAR SESIÓN
+======================================== */
+
+.login-submit {
+  width: 100%;
+  height: 48px;
+
+  border: 0;
+  border-radius: 10px;
+
+  background: #1b1917;
+  color: #ffffff;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  cursor: pointer;
+
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.16);
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+
+.login-submit:hover {
+  background: #292521;
+}
+
+
+.login-submit:active {
+  transform: scale(0.99);
+}
+
+
+.login-submit:disabled {
+  opacity: 0.7;
+
+  cursor: not-allowed;
+}
+
+
+/* ========================================
+   SEPARADOR
+======================================== */
+
+.login-separator {
+  display: flex;
+  align-items: center;
+
+  gap: 12px;
+
+  margin: 24px 0 18px;
+
+  color: #81776a;
+
+  font-size: 11px;
+}
+
+
+.login-separator::before {
+  content: '';
+
+  flex: 1;
+
+  height: 1px;
+
+  background: #d8ccb9;
+}
+
+
+.login-separator span {
+  white-space: nowrap;
+}
+
+
+/* ========================================
+   LOGIN SOCIAL
+======================================== */
+
+.social-login {
+  display: grid;
+
+  grid-template-columns: 1fr 1fr;
+
+  gap: 14px;
+}
+
+
+.social-login button {
+  height: 42px;
+
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+
+.social-login button:hover {
+  transform: translateY(-1px);
+}
+
+
+/* GOOGLE */
+
+.google-button {
+  border: 1px solid #d8cbb7;
+
+  background: #ffffff;
+  color: #25211e;
+}
+
+
+.google-button strong {
+  margin-right: 8px;
+
+  color: #e53935;
+}
+
+
+/* FACEBOOK */
+
+.facebook-button {
+  border: 1px solid #1877f2;
+
+  background: #1877f2;
+  color: #ffffff;
+}
+
+
+.facebook-button strong {
+  margin-right: 8px;
+}
+
+
+/* ========================================
+   REGISTRO
+======================================== */
+
+.register-text {
+  margin: 28px 0 0;
+
+  color: #6c645d;
+
+  text-align: center;
+
+  font-size: 12px;
+}
+
+
+.register-text button {
+  border: 0;
+
+  padding: 0;
+
+  background: transparent;
+
+  color: #9a3b25;
+
+  font-weight: 700;
+
+  cursor: pointer;
+}
+
+
+.register-text button:hover {
+  text-decoration: underline;
+}
+
+
+/* ========================================
+   TABLET
+======================================== */
+
+@media (max-width: 900px) {
+
+  .login-modal {
+    width: min(850px, 96vw);
+
+    grid-template-columns: 40% 60%;
+  }
+
+
+  .login-brand-panel {
+    padding: 45px 25px;
+  }
+
+
+  .login-main-logo {
+    width: 125px;
+    height: 125px;
+  }
+
+
+  .login-main-logo img {
+    max-width: 125px;
+    max-height: 125px;
+  }
+
+
+  .login-brand-panel h2 {
+    font-size: 23px;
+  }
+
+
+  .login-form-panel {
+    padding-left: 32px;
+    padding-right: 32px;
+  }
+}
+
+
+/* ========================================
+   CELULAR
+======================================== */
+
+@media (max-width: 768px) {
+
+  .login-overlay {
+    padding: 16px;
+
+    align-items: flex-start;
+
+    overflow-y: auto;
+  }
+
+
+  .login-modal {
+    width: 100%;
+    max-width: 500px;
+
+    min-height: auto;
+
+    grid-template-columns: 1fr;
+
+    margin: 20px auto;
+  }
+
+
+  .login-brand-panel {
+    display: none;
+  }
+
+
+  .login-form-panel {
+    padding: 55px 24px 30px;
+  }
+
+
+  .login-form-panel h1 {
+    font-size: 22px;
+  }
+
+
+  .login-small-logo {
+    width: 52px;
+    height: 52px;
+  }
+
+
+  .login-small-logo img {
+    max-width: 52px;
+    max-height: 52px;
+  }
+
+
+  .social-login {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/* ========================================
+   CELULAR PEQUEÑO
+======================================== */
+
+@media (max-width: 430px) {
+
+  .login-overlay {
+    padding: 10px;
+  }
+
+
+  .login-form-panel {
+    padding: 52px 18px 26px;
+  }
+
+
+  .login-form-panel h1 {
+    font-size: 20px;
+  }
+
+
+  .login-options {
+    gap: 12px;
+  }
+
+
+  .forgot-password {
+    text-align: right;
+  }
+}
