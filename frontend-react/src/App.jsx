@@ -1,114 +1,287 @@
-import { Button, Card, Col, Container, Row } from 'react-bootstrap'
-import Navbar from './components/Navbar/Navbar'
+import { useState } from 'react'
+import { Button, Col, Container, Row } from 'react-bootstrap'
+
+import {
+  LuSandwich,
+  LuUtensils,
+  LuCupSoda,
+  LuIceCreamCone
+} from 'react-icons/lu'
+
+import { PiDrop } from 'react-icons/pi'
+
+import Navbar from './components/Navbar/Navbar/Navbar.jsx'
+import Login from './pages/Login.jsx'
+import RegisterForm from './components/Auth/RegisterForm.jsx'
+import EmailVerificationNotice from './components/Auth/EmailVerificationNotice.jsx'
+import Catalogo from './pages/Catalogo.jsx'
+
+import heroImg from './assets/images/hero-sanguche.jpg'
 
 function App() {
+  // null = ninguna pantalla
+  // login = inicio de sesión
+  // register = registro
+  // verify = verificación de correo
+  const [authView, setAuthView] = useState(null)
+
+  const [registeredEmail, setRegisteredEmail] = useState(null)
+
+  // =========================
+  // ABRIR LOGIN
+  // =========================
+  const handleOpenAuth = () => {
+    setAuthView('login')
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // CERRAR AUTENTICACIÓN
+  // =========================
+  const handleCloseAuth = () => {
+    setAuthView(null)
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // ABRIR REGISTRO
+  // =========================
+  const handleOpenRegister = () => {
+    setAuthView('register')
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // REGRESAR AL LOGIN
+  // =========================
+  const handleOpenLogin = () => {
+    setAuthView('login')
+    setRegisteredEmail(null)
+  }
+
+  // =========================
+  // REGISTRO EXITOSO
+  // =========================
+  const handleRegisterSuccess = (email) => {
+    setRegisteredEmail(email)
+    setAuthView('verify')
+  }
+
   return (
     <>
-      <Navbar />
+      {/* ================= NAVBAR ================= */}
+
+      <Navbar onOpenAuth={handleOpenAuth} />
 
       <main>
+        {/* ================= HERO ================= */}
 
-        {/* HERO */}
-        <section className="hero-section py-5">
-          <Container className="py-5">
-
-            <p className="text-uppercase fw-bold text-danger">
-              La Lucha Sanguchería Criolla
-            </p>
-
-            <h1 className="display-3 fw-bold">
-              Sánguches Criollos
-            </h1>
-
-            <p className="lead mb-4">
-              El sabor que nos representa.
-            </p>
-
-            <Button variant="primary">
-              Ver carta
-            </Button>
-
-          </Container>
-        </section>
-
-
-        {/* PRODUCTOS */}
-        <section
-          id="productos"
-          className="py-5"
-        >
-
+        <section className="hero-section">
           <Container>
+            <Row className="align-items-center g-5">
 
-            <h2 className="section-title">
-              Nuestros favoritos
-            </h2>
+              <Col xs={12} lg={6}>
+                <span className="hero-badge">
+                  ESPECIALIDAD LA LUCHA
+                </span>
 
-            <Row className="g-4">
+                <h1 className="hero-title">
+                  SÁNGUCHES
+                  <br />
+                  CRIOLLOS
+                </h1>
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Sánguche de Chicharrón
-                    </Card.Title>
+                <h2 className="hero-script">
+                  Hechos como en casa
+                </h2>
 
-                    <Card.Text>
-                      Un clásico de La Lucha.
-                    </Card.Text>
+                <p className="hero-description">
+                  Tradición criolla horneada diariamente, carnes jugosas
+                  seleccionadas y la infaltable sarza criolla.
+                </p>
 
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
+                <div className="d-flex flex-wrap gap-3">
+                  <Button
+                    href="#catalogo"
+                    className="btn-hero-primary"
+                  >
+                    Ver menú
+                  </Button>
+
+                  <Button
+                    href="#promociones"
+                    className="btn-hero-secondary"
+                  >
+                    Promociones del día
+                  </Button>
+                </div>
               </Col>
 
+              <Col xs={12} lg={6}>
+                <div className="hero-image-container">
+                  <img
+                    src={heroImg}
+                    alt="Sánguche criollo La Lucha"
+                    className="hero-image"
+                  />
 
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Sánguche de Pollo
-                    </Card.Title>
+                  <button
+                    type="button"
+                    className="hero-arrow hero-arrow-left"
+                    aria-label="Imagen anterior"
+                  >
+                    ‹
+                  </button>
 
-                    <Card.Text>
-                      Preparado con ingredientes seleccionados.
-                    </Card.Text>
+                  <button
+                    type="button"
+                    className="hero-arrow hero-arrow-right"
+                    aria-label="Imagen siguiente"
+                  >
+                    ›
+                  </button>
+                </div>
 
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
-              </Col>
-
-
-              <Col xs={12} md={6} lg={4}>
-                <Card className="h-100 shadow-sm">
-                  <Card.Body>
-                    <Card.Title>
-                      Jugo Natural
-                    </Card.Title>
-
-                    <Card.Text>
-                      El acompañamiento ideal.
-                    </Card.Text>
-
-                    <Button variant="primary">
-                      Agregar
-                    </Button>
-                  </Card.Body>
-                </Card>
+                <div className="hero-dots">
+                  <span className="hero-dot active"></span>
+                  <span className="hero-dot"></span>
+                  <span className="hero-dot"></span>
+                </div>
               </Col>
 
             </Row>
-
           </Container>
-
         </section>
 
+        {/* ================= CATEGORÍAS ================= */}
+
+        <section className="categorias-section">
+          <Container>
+
+            <div className="categorias-header">
+              <h2>Categorías</h2>
+
+              <a href="#catalogo">
+                Ver todas
+              </a>
+            </div>
+
+            <div className="categorias-list">
+
+              <a
+                href="#catalogo"
+                className="categoria-item active"
+              >
+                <div className="categoria-icon">
+                  <LuSandwich />
+                </div>
+
+                <span>Sánguches</span>
+              </a>
+
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+                <div className="categoria-icon">
+                  <LuUtensils />
+                </div>
+
+                <span>Combos</span>
+              </a>
+
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+                <div className="categoria-icon">
+                  <LuCupSoda />
+                </div>
+
+                <span>Bebidas</span>
+              </a>
+
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+                <div className="categoria-icon">
+                  <PiDrop />
+                </div>
+
+                <span>Extras</span>
+              </a>
+
+              <a
+                href="#catalogo"
+                className="categoria-item"
+              >
+                <div className="categoria-icon">
+                  <LuIceCreamCone />
+                </div>
+
+                <span>Postres</span>
+              </a>
+
+            </div>
+
+          </Container>
+        </section>
+
+        {/* ================= CATÁLOGO ================= */}
+
+        <section id="catalogo">
+          <Catalogo />
+        </section>
       </main>
+
+      {/* ================= LOGIN ================= */}
+
+      {authView === 'login' && (
+        <Login
+          onClose={handleCloseAuth}
+          onRegister={handleOpenRegister}
+        />
+      )}
+
+      {/* ================= REGISTRO ================= */}
+
+      {authView === 'register' && (
+        <div className="auth-overlay">
+
+          <RegisterForm
+            onSuccess={handleRegisterSuccess}
+            onClose={handleCloseAuth}
+            onLogin={() => setAuthView('login')}
+          />
+
+        </div>
+      )}
+
+      {/* ================= VERIFICACIÓN ================= */}
+
+      {authView === 'verify' && registeredEmail && (
+        <div className="auth-overlay">
+
+          <div className="auth-register-container">
+
+            <button
+              type="button"
+              className="auth-close-button"
+              onClick={handleCloseAuth}
+              aria-label="Cerrar verificación"
+            >
+              ×
+            </button>
+
+            <EmailVerificationNotice
+              email={registeredEmail}
+            />
+
+          </div>
+
+        </div>
+      )}
     </>
   )
 }
