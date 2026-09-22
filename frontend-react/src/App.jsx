@@ -19,52 +19,59 @@ import Catalogo from './pages/Catalogo.jsx'
 import heroImg from './assets/images/hero-sanguche.jpg'
 
 function App() {
-  // null = ninguna pantalla
-  // login = inicio de sesión
-  // register = registro
-  // verify = verificación de correo
   const [authView, setAuthView] = useState(null)
-
-  const [registeredEmail, setRegisteredEmail] = useState(null)
+  const [registeredEmail, setRegisteredEmail] = useState('')
 
   // =========================
   // ABRIR LOGIN
   // =========================
+
   const handleOpenAuth = () => {
     setAuthView('login')
-    setRegisteredEmail(null)
+    setRegisteredEmail('')
   }
 
   // =========================
   // CERRAR AUTENTICACIÓN
   // =========================
+
   const handleCloseAuth = () => {
     setAuthView(null)
-    setRegisteredEmail(null)
+    setRegisteredEmail('')
   }
 
   // =========================
   // ABRIR REGISTRO
   // =========================
+
   const handleOpenRegister = () => {
     setAuthView('register')
-    setRegisteredEmail(null)
+    setRegisteredEmail('')
   }
 
   // =========================
   // REGRESAR AL LOGIN
   // =========================
+
   const handleOpenLogin = () => {
     setAuthView('login')
-    setRegisteredEmail(null)
   }
 
   // =========================
   // REGISTRO EXITOSO
   // =========================
+
   const handleRegisterSuccess = (email) => {
     setRegisteredEmail(email)
     setAuthView('verify')
+  }
+
+  // =========================
+  // CORREO VERIFICADO
+  // =========================
+
+  const handleVerificationSuccess = () => {
+    setAuthView('login')
   }
 
   return (
@@ -76,10 +83,9 @@ function App() {
       <main>
         {/* ================= HERO ================= */}
 
-        <section className="hero-section">
+        <section id="inicio" className="hero-section">
           <Container>
             <Row className="align-items-center g-5">
-
               <Col xs={12} lg={6}>
                 <span className="hero-badge">
                   ESPECIALIDAD LA LUCHA
@@ -148,7 +154,6 @@ function App() {
                   <span className="hero-dot"></span>
                 </div>
               </Col>
-
             </Row>
           </Container>
         </section>
@@ -157,7 +162,6 @@ function App() {
 
         <section className="categorias-section">
           <Container>
-
             <div className="categorias-header">
               <h2>Categorías</h2>
 
@@ -167,7 +171,6 @@ function App() {
             </div>
 
             <div className="categorias-list">
-
               <a
                 href="#catalogo"
                 className="categoria-item active"
@@ -222,9 +225,7 @@ function App() {
 
                 <span>Postres</span>
               </a>
-
             </div>
-
           </Container>
         </section>
 
@@ -248,13 +249,11 @@ function App() {
 
       {authView === 'register' && (
         <div className="auth-overlay">
-
           <RegisterForm
             onSuccess={handleRegisterSuccess}
             onClose={handleCloseAuth}
-            onLogin={() => setAuthView('login')}
+            onLogin={handleOpenLogin}
           />
-
         </div>
       )}
 
@@ -262,9 +261,7 @@ function App() {
 
       {authView === 'verify' && registeredEmail && (
         <div className="auth-overlay">
-
-          <div className="auth-register-container">
-
+          <div className="auth-verification-modal">
             <button
               type="button"
               className="auth-close-button"
@@ -276,10 +273,9 @@ function App() {
 
             <EmailVerificationNotice
               email={registeredEmail}
+              onVerified={handleVerificationSuccess}
             />
-
           </div>
-
         </div>
       )}
     </>

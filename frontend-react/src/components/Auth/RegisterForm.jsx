@@ -1,6 +1,9 @@
 import { useState } from 'react'
+
 import { registerClient } from '../../services/authService'
+
 import '../../styles/register.css'
+
 import logo from '../../assets/images/logo.png'
 
 function RegisterForm({ onSuccess, onClose, onLogin }) {
@@ -37,7 +40,8 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
       }
     } catch (err) {
       setError(
-        err.message || 'No se pudo completar el registro.'
+        err.message ||
+        'No se pudo completar el registro.'
       )
     } finally {
       setLoading(false)
@@ -46,7 +50,6 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
 
   return (
     <div className="register-layout">
-
       <button
         type="button"
         className="register-modal-close"
@@ -56,10 +59,10 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
         ×
       </button>
 
+      {/* ================= PANEL IZQUIERDO ================= */}
+
       <div className="register-brand-panel">
-
         <div className="register-brand-content">
-
           <div className="register-main-logo">
             <img
               src={logo}
@@ -74,17 +77,16 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
           <p>
             Criollo de corazón
           </p>
-
         </div>
 
         <span className="register-copyright">
           LA LUCHA SANGUCHERÍA CRIOLLA © 2026
         </span>
-
       </div>
 
-      <div className="register-form-panel">
+      {/* ================= FORMULARIO ================= */}
 
+      <div className="register-form-panel">
         <div className="register-small-logo">
           <img
             src={logo}
@@ -101,15 +103,14 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
         </p>
 
         <form onSubmit={handleSubmit}>
+          {/* NOMBRE */}
 
           <div className="register-field">
-
             <label htmlFor="nombre">
               Nombre completo
             </label>
 
             <div className="register-input">
-
               <input
                 id="nombre"
                 name="nombre"
@@ -120,19 +121,17 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
                 autoComplete="name"
                 required
               />
-
             </div>
-
           </div>
 
-          <div className="register-field">
+          {/* CORREO */}
 
+          <div className="register-field">
             <label htmlFor="email">
               Correo electrónico
             </label>
 
             <div className="register-input">
-
               <span className="register-input-icon">
                 ✉
               </span>
@@ -147,19 +146,17 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
                 autoComplete="email"
                 required
               />
-
             </div>
-
           </div>
 
-          <div className="register-field">
+          {/* CONTRASEÑA */}
 
+          <div className="register-field">
             <label htmlFor="password">
               Contraseña
             </label>
 
             <div className="register-input">
-
               <span className="register-input-icon">
                 ♙
               </span>
@@ -167,7 +164,11 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
               <input
                 id="password"
                 name="password"
-                type={mostrarPassword ? 'text' : 'password'}
+                type={
+                  mostrarPassword
+                    ? 'text'
+                    : 'password'
+                }
                 placeholder="••••••••"
                 value={formData.password}
                 onChange={handleChange}
@@ -180,7 +181,9 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
                 type="button"
                 className="register-password-toggle"
                 onClick={() =>
-                  setMostrarPassword(!mostrarPassword)
+                  setMostrarPassword(
+                    !mostrarPassword
+                  )
                 }
                 aria-label={
                   mostrarPassword
@@ -190,16 +193,18 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
               >
                 {mostrarPassword ? '◉' : '◎'}
               </button>
-
             </div>
-
           </div>
+
+          {/* ERROR */}
 
           {error && (
             <div className="register-error">
               {error}
             </div>
           )}
+
+          {/* BOTÓN */}
 
           <button
             type="submit"
@@ -210,8 +215,9 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
               ? 'Registrando...'
               : 'Registrarme'}
           </button>
-
         </form>
+
+        {/* ================= SOCIAL ================= */}
 
         <div className="register-separator">
           <span>
@@ -220,7 +226,6 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
         </div>
 
         <div className="register-social">
-
           <button
             type="button"
             className="register-google"
@@ -236,11 +241,11 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
             <strong>f</strong>
             Facebook
           </button>
-
         </div>
 
-        <p className="register-login-text">
+        {/* ================= LOGIN ================= */}
 
+        <p className="register-login-text">
           ¿Ya tienes una cuenta?{' '}
 
           <button
@@ -249,11 +254,8 @@ function RegisterForm({ onSuccess, onClose, onLogin }) {
           >
             Inicia sesión aquí
           </button>
-
         </p>
-
       </div>
-
     </div>
   )
 }
