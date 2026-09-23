@@ -1,5 +1,4 @@
 import { useState } from 'react'
-
 import {
   LuMail,
   LuCircleCheck,
@@ -7,7 +6,6 @@ import {
 } from 'react-icons/lu'
 
 import { verifyEmailToken } from '../../services/authService'
-
 import logo from '../../assets/images/logo.png'
 
 function EmailVerificationNotice({
@@ -19,37 +17,54 @@ function EmailVerificationNotice({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
+  // =========================
+  // VERIFICAR CÓDIGO
+  // =========================
   const handleVerify = async (e) => {
     e.preventDefault()
 
     setError('')
+
+    if (token.length !== 6) {
+      setError(
+        'Ingresa el código de verificación de 6 dígitos.'
+      )
+      return
+    }
+
     setLoading(true)
 
     try {
-      await verifyEmailToken(token)
+      // IMPORTANTE:
+      // Enviamos el correo Y el código al backend
+      await verifyEmailToken(email, token)
+
       setVerified(true)
     } catch (err) {
       setError(
         err.message ||
-        'El código ingresado no es válido.'
+          'El código ingresado no es válido.'
       )
     } finally {
       setLoading(false)
     }
   }
 
+  // =========================
+  // SOLO PERMITIR 6 NÚMEROS
+  // =========================
   const handleTokenChange = (e) => {
     const value = e.target.value
       .replace(/\D/g, '')
       .slice(0, 6)
 
     setToken(value)
+    setError('')
   }
 
   // =========================
   // CORREO VERIFICADO
   // =========================
-
   if (verified) {
     return (
       <div
@@ -136,9 +151,8 @@ function EmailVerificationNotice({
   }
 
   // =========================
-  // VERIFICACIÓN
+  // PANTALLA DE VERIFICACIÓN
   // =========================
-
   return (
     <div
       style={{
@@ -151,7 +165,6 @@ function EmailVerificationNotice({
       }}
     >
       {/* LOGO */}
-
       <img
         src={logo}
         alt="La Lucha"
@@ -167,7 +180,6 @@ function EmailVerificationNotice({
       />
 
       {/* ICONO CORREO */}
-
       <div
         style={{
           width: '65px',
@@ -217,7 +229,6 @@ function EmailVerificationNotice({
       </p>
 
       <form onSubmit={handleVerify}>
-
         <label
           htmlFor="verification-code"
           style={{
@@ -237,7 +248,7 @@ function EmailVerificationNotice({
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
-          placeholder="123456"
+          placeholder="000000"
           value={token}
           onChange={handleTokenChange}
           maxLength={6}
@@ -287,13 +298,13 @@ function EmailVerificationNotice({
             border: 'none',
             borderRadius: '8px',
             background:
-              token.length === 6
+              token.length === 6 && !loading
                 ? '#1b1916'
                 : '#77716a',
             color: '#ffffff',
             fontWeight: '700',
             cursor:
-              token.length === 6
+              token.length === 6 && !loading
                 ? 'pointer'
                 : 'not-allowed'
           }}
@@ -312,10 +323,8 @@ function EmailVerificationNotice({
           fontSize: '12px'
         }}
       >
-        Para esta versión de prueba utiliza el código{' '}
-        <strong style={{ color: '#a45a1e' }}>
-          123456
-        </strong>
+        Ingresa el código de 6 dígitos que enviamos
+        a tu correo.
       </p>
 
       <button
