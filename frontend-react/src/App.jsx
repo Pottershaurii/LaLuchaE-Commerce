@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Routes, Route } from 'react-router-dom'
 import { Button, Col, Container, Row } from 'react-bootstrap'
 
 import {
@@ -15,75 +15,19 @@ import Login from './pages/Login.jsx'
 import RegisterForm from './components/Auth/RegisterForm.jsx'
 import EmailVerificationNotice from './components/Auth/EmailVerificationNotice.jsx'
 import Catalogo from './pages/Catalogo.jsx'
+import Login from './pages/Login.jsx'
+import heroImg from './assets/images/hero-sanguche.jpg'
 
 import heroImg from './assets/images/hero-sanguche.jpg'
 
-function App() {
-  const [authView, setAuthView] = useState(null)
-  const [registeredEmail, setRegisteredEmail] = useState('')
-
-  // =========================
-  // ABRIR LOGIN
-  // =========================
-
-  const handleOpenAuth = () => {
-    setAuthView('login')
-    setRegisteredEmail('')
-  }
-
-  // =========================
-  // CERRAR AUTENTICACIÓN
-  // =========================
-
-  const handleCloseAuth = () => {
-    setAuthView(null)
-    setRegisteredEmail('')
-  }
-
-  // =========================
-  // ABRIR REGISTRO
-  // =========================
-
-  const handleOpenRegister = () => {
-    setAuthView('register')
-    setRegisteredEmail('')
-  }
-
-  // =========================
-  // REGRESAR AL LOGIN
-  // =========================
-
-  const handleOpenLogin = () => {
-    setAuthView('login')
-  }
-
-  // =========================
-  // REGISTRO EXITOSO
-  // =========================
-
-  const handleRegisterSuccess = (email) => {
-    setRegisteredEmail(email)
-    setAuthView('verify')
-  }
-
-  // =========================
-  // CORREO VERIFICADO
-  // =========================
-
-  const handleVerificationSuccess = () => {
-    setAuthView('login')
-  }
-
+function Home() {
   return (
     <>
       {/* ================= NAVBAR ================= */}
 
-      <Navbar onOpenAuth={handleOpenAuth} />
-
       <main>
         {/* ================= HERO ================= */}
-
-        <section id="inicio" className="hero-section">
+        <section className="hero-section">
           <Container>
             <Row className="align-items-center g-5">
               <Col xs={12} lg={6}>
@@ -123,6 +67,7 @@ function App() {
                 </div>
               </Col>
 
+              {/* ---------- IMAGEN ---------- */}
               <Col xs={12} lg={6}>
                 <div className="hero-image-container">
                   <img
@@ -159,9 +104,9 @@ function App() {
         </section>
 
         {/* ================= CATEGORÍAS ================= */}
-
         <section className="categorias-section">
           <Container>
+
             <div className="categorias-header">
               <h2>Categorías</h2>
 
@@ -171,6 +116,8 @@ function App() {
             </div>
 
             <div className="categorias-list">
+
+              {/* SÁNGUCHES */}
               <a
                 href="#catalogo"
                 className="categoria-item active"
@@ -182,6 +129,8 @@ function App() {
                 <span>Sánguches</span>
               </a>
 
+
+              {/* COMBOS */}
               <a
                 href="#catalogo"
                 className="categoria-item"
@@ -193,6 +142,8 @@ function App() {
                 <span>Combos</span>
               </a>
 
+
+              {/* BEBIDAS */}
               <a
                 href="#catalogo"
                 className="categoria-item"
@@ -204,6 +155,8 @@ function App() {
                 <span>Bebidas</span>
               </a>
 
+
+              {/* EXTRAS */}
               <a
                 href="#catalogo"
                 className="categoria-item"
@@ -215,6 +168,8 @@ function App() {
                 <span>Extras</span>
               </a>
 
+
+              {/* POSTRES */}
               <a
                 href="#catalogo"
                 className="categoria-item"
@@ -229,8 +184,8 @@ function App() {
           </Container>
         </section>
 
-        {/* ================= CATÁLOGO ================= */}
 
+        {/* ================= CATÁLOGO ================= */}
         <section id="catalogo">
           <Catalogo />
         </section>
@@ -279,6 +234,28 @@ function App() {
         </div>
       )}
     </>
+  )
+}
+
+
+function App() {
+  return (
+    <Routes>
+      <Route
+        path="/"
+        element={<Home />}
+      />
+
+      <Route
+        path="/login"
+        element={
+          <>
+            <Home />
+            <Login />
+          </>
+        }
+      />
+    </Routes>
   )
 }
 

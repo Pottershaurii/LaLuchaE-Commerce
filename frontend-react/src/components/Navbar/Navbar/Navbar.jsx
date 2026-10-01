@@ -1,8 +1,12 @@
+import { Container, Nav, Navbar as BootstrapNavbar } from 'react-bootstrap'
+import { Link } from 'react-router-dom'
 import {
-  Container,
-  Nav,
-  Navbar as BootstrapNavbar
-} from 'react-bootstrap'
+  LuSearch,
+  LuUserRound,
+  LuShoppingBag
+} from 'react-icons/lu'
+
+import logo from '../../../assets/logo.png'
 
 import {
   LuSearch,
@@ -18,109 +22,120 @@ function Navbar({ onOpenAuth }) {
       expand="lg"
       className="lalucha-navbar"
     >
-      <Container className="navbar-container">
+      <Container fluid className="lalucha-navbar-container">
 
-        {/* ================= MARCA ================= */}
+        {/* LOGO + NOMBRE */}
         <BootstrapNavbar.Brand
-          href="#inicio"
+          as={Link}
+          to="/"
           className="lalucha-brand"
         >
-          <img
-            src={logo}
-            alt="La Lucha Sanguchería Criolla"
-            className="navbar-logo-img"
-          />
+          <div className="lalucha-logo-wrapper">
+            <img
+              src={logo}
+              alt="Logo La Lucha"
+              className="lalucha-logo-img"
+            />
+          </div>
 
-          <div className="navbar-brand-text">
-            <span className="navbar-brand-title">
+          <div className="lalucha-brand-info">
+            <span className="lalucha-brand-name">
               LA LUCHA
             </span>
 
-            <span className="navbar-brand-subtitle">
+            <span className="lalucha-brand-description">
               SANGUCHERÍA CRIOLLA
             </span>
           </div>
         </BootstrapNavbar.Brand>
 
-        {/* ================= RESPONSIVE ================= */}
+
+        {/* BOTÓN RESPONSIVE */}
         <BootstrapNavbar.Toggle
-          aria-controls="lalucha-navbar"
-          className="navbar-toggle"
+          aria-controls="lalucha-navbar-collapse"
+          className="lalucha-navbar-toggle"
         />
 
-        <BootstrapNavbar.Collapse id="lalucha-navbar">
 
-          {/* ================= MENÚ ================= */}
-          <Nav className="navbar-menu mx-auto">
+        <BootstrapNavbar.Collapse
+          id="lalucha-navbar-collapse"
+          className="lalucha-navbar-collapse"
+        >
+
+          {/* MENÚ CENTRAL */}
+          <Nav className="lalucha-menu">
 
             <Nav.Link
-              href="#inicio"
-              className="navbar-link active"
+              as={Link}
+              to="/"
+              className="lalucha-menu-link lalucha-menu-active"
             >
               Inicio
             </Nav.Link>
 
             <Nav.Link
-              href="#catalogo"
-              className="navbar-link"
+              href="/#catalogo"
+              className="lalucha-menu-link"
             >
               Menú
             </Nav.Link>
 
             <Nav.Link
-              href="#promociones"
-              className="navbar-link"
+              href="/#promociones"
+              className="lalucha-menu-link"
             >
               Promociones
             </Nav.Link>
 
             <Nav.Link
-              href="#nosotros"
-              className="navbar-link"
+              href="/#nosotros"
+              className="lalucha-menu-link"
             >
               Nosotros
             </Nav.Link>
 
             <Nav.Link
-              href="#contacto"
-              className="navbar-link"
+              href="/#contacto"
+              className="lalucha-menu-link"
             >
               Contacto
             </Nav.Link>
 
           </Nav>
 
-          {/* ================= ACCIONES ================= */}
-          <div className="navbar-actions">
+
+          {/* ICONOS DERECHA */}
+          <div className="lalucha-actions">
 
             <button
               type="button"
-              className="navbar-icon-button"
+              className="lalucha-action-search"
               aria-label="Buscar"
             >
               <LuSearch />
             </button>
 
-            <button
-              type="button"
-              className="navbar-login-button"
-              onClick={onOpenAuth}
+
+            <Link
+              to="/login"
+              className="lalucha-action-login"
             >
-              <LuUserRound className="navbar-user-icon" />
+              <LuUserRound />
 
               <span>
                 Ingresar
               </span>
-            </button>
+            </Link>
+
 
             <button
               type="button"
-              className="navbar-cart-button"
+              className="lalucha-action-cart"
               aria-label="Carrito"
             >
               <LuShoppingBag />
 
-              <span className="navbar-cart-count">
+              <span className="lalucha-cart-badge">
                 2
               </span>
             </button>

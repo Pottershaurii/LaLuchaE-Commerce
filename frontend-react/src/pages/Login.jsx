@@ -1,10 +1,11 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import '../styles/login.css'
-import logo from '../assets/images/logo.png'
 
-function Login({ onClose, onRegister }) {
+import logo from '../assets/logo.png'
+
+function Login() {
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -23,12 +24,7 @@ function Login({ onClose, onRegister }) {
 
     try {
       await login(correo, password)
-
-      if (onClose) {
-        onClose()
-      } else {
-        navigate('/')
-      }
+      navigate('/')
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
 
@@ -46,10 +42,14 @@ function Login({ onClose, onRegister }) {
     <div className="login-overlay">
       <div className="login-modal">
 
-        {/* ================= PANEL IZQUIERDO ================= */}
+        {/* =========================
+            PANEL IZQUIERDO
+        ========================== */}
         <div className="login-brand-panel">
+
           <div className="login-brand-content">
 
+            {/* LOGO GRANDE */}
             <div className="login-main-logo">
               <img
                 src={logo}
@@ -65,25 +65,30 @@ function Login({ onClose, onRegister }) {
             <p>
               Criollo de corazón
             </p>
+
           </div>
 
           <span className="login-copyright">
             LA LUCHA SANGUCHERÍA CRIOLLA © 2026
           </span>
+
         </div>
 
-        {/* ================= PANEL DERECHO ================= */}
+
+        {/* =========================
+            PANEL DERECHO
+        ========================== */}
         <div className="login-form-panel">
 
-          {/* CERRAR */}
-          <button
-            type="button"
+          {/* CERRAR LOGIN */}
+          <Link
+            to="/"
             className="login-close"
-            onClick={onClose || (() => navigate('/'))}
             aria-label="Cerrar login"
           >
             ×
-          </button>
+          </Link>
+
 
           {/* LOGO PEQUEÑO */}
           <div className="login-small-logo">
@@ -94,6 +99,7 @@ function Login({ onClose, onRegister }) {
             />
           </div>
 
+
           <h1>
             Bienvenido a La Lucha Sanguchería
           </h1>
@@ -102,16 +108,21 @@ function Login({ onClose, onRegister }) {
             Inicia sesión para continuar
           </p>
 
-          {/* ================= FORMULARIO ================= */}
+
+          {/* =========================
+              FORMULARIO
+          ========================== */}
           <form onSubmit={handleSubmit}>
 
             {/* CORREO */}
             <div className="login-field">
+
               <label htmlFor="correo">
                 Correo electrónico
               </label>
 
               <div className="login-input">
+
                 <span className="login-input-icon">
                   ✉
                 </span>
@@ -125,16 +136,21 @@ function Login({ onClose, onRegister }) {
                   autoComplete="email"
                   required
                 />
+
               </div>
+
             </div>
+
 
             {/* CONTRASEÑA */}
             <div className="login-field">
+
               <label htmlFor="password">
                 Contraseña
               </label>
 
               <div className="login-input">
+
                 <span className="login-input-icon">
                   ♙
                 </span>
@@ -163,12 +179,17 @@ function Login({ onClose, onRegister }) {
                 >
                   {mostrarPassword ? '◉' : '◎'}
                 </button>
+
               </div>
+
             </div>
 
-            {/* RECORDAR / CONTRASEÑA */}
+
+            {/* RECORDAR / OLVIDÉ CONTRASEÑA */}
             <div className="login-options">
+
               <label className="remember-option">
+
                 <input
                   type="checkbox"
                   checked={recordarme}
@@ -180,7 +201,9 @@ function Login({ onClose, onRegister }) {
                 <span>
                   Recordarme
                 </span>
+
               </label>
+
 
               <button
                 type="button"
@@ -188,16 +211,19 @@ function Login({ onClose, onRegister }) {
               >
                 ¿Olvidaste tu contraseña?
               </button>
+
             </div>
 
-            {/* ERROR */}
+
+            {/* MENSAJE DE ERROR */}
             {mensaje && (
               <div className="login-message">
                 {mensaje}
               </div>
             )}
 
-            {/* LOGIN */}
+
+            {/* BOTÓN LOGIN */}
             <button
               type="submit"
               className="login-submit"
@@ -207,17 +233,25 @@ function Login({ onClose, onRegister }) {
                 ? 'Iniciando sesión...'
                 : 'Iniciar sesión'}
             </button>
+
           </form>
 
-          {/* ================= SEPARADOR ================= */}
+
+          {/* =========================
+              SEPARADOR
+          ========================== */}
           <div className="login-separator">
             <span>
               O CONTINÚA CON
             </span>
           </div>
 
-          {/* ================= REDES ================= */}
+
+          {/* =========================
+              REDES SOCIALES
+          ========================== */}
           <div className="social-login">
+
             <button
               type="button"
               className="google-button"
@@ -226,6 +260,7 @@ function Login({ onClose, onRegister }) {
               Google
             </button>
 
+
             <button
               type="button"
               className="facebook-button"
@@ -233,19 +268,21 @@ function Login({ onClose, onRegister }) {
               <strong>f</strong>
               Facebook
             </button>
+
           </div>
 
-          {/* ================= REGISTRO ================= */}
+
+          {/* =========================
+              REGISTRO
+          ========================== */}
           <p className="register-text">
             ¿No tienes una cuenta?{' '}
 
-            <button
-              type="button"
-              onClick={onRegister}
-            >
+            <button type="button">
               Regístrate aquí
             </button>
           </p>
+
         </div>
       </div>
     </div>
