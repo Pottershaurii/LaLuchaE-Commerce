@@ -1,0 +1,14 @@
+[33mb161e09[m[33m ([m[1;31morigin/feature/HU-04-catalogo[m[33m, [m[1;32mfeature/HU-04-catalogo[m[33m)[m feat: implementar login y autenticacion en frontend
+ frontend-react/package-lock.json                   | 371 [32m+++++++++[m[31m-[m
+ frontend-react/package.json                        |   4 [32m+[m[31m-[m
+ frontend-react/src/App.jsx                         | 108 [32m+[m[31m--[m
+ frontend-react/src/assets/logo.png                 | Bin [31m0[m -> [32m1166091[m bytes
+ .../src/components/Navbar/Navbar/Navbar.jsx        | 130 [32m+++[m[31m-[m
+ frontend-react/src/context/AuthContext.jsx         |  45 [32m++[m
+ frontend-react/src/main.jsx                        |  10 [32m+[m[31m-[m
+ frontend-react/src/pages/Login.jsx                 | 292 [32m++++++++[m
+ frontend-react/src/services/api.js                 |  36 [32m+[m
+ frontend-react/src/services/authService.js         |  37 [32m+[m
+ frontend-react/src/styles/login.css                | 755 [32m+++++++++++++++++++++[m
+ frontend-react/src/styles/navbar.css               | 557 [32m+++++++++++++++[m
+ 12 files changed, 2247 insertions(+), 98 deletions(-)
