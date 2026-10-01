@@ -1,4 +1,8 @@
-"""# E-Commerce & Gestión de Inventario en Tiempo Real - La Lucha Sanguchería
+<p align="center">
+  <img src="https://raw.githubusercontent.com/Pottershaurii/LaLuchaE-Commerce/main/image_290f48.png" alt="La Lucha Sanguchería Criolla Logo" width="400"/>
+</p>
+
+# E-Commerce & Gestión de Inventario en Tiempo Real - La Lucha Sanguchería
 
 Sistema web para la gestión de ventas en línea y control de inventarios automatizado en tiempo real para la cadena **La Lucha Sanguchería Criolla**.
 
@@ -8,21 +12,26 @@ Sistema web para la gestión de ventas en línea y control de inventarios automa
 
 Este proyecto consiste en la creación e implementación de una plataforma de comercio electrónico orientada a digitalizar la atención de La Lucha Sanguchería. La solución incluye una tienda en línea para el cliente final y un panel administrativo que sincroniza el inventario en tiempo real a medida que se procesan los pedidos (sánguches, jugos, complementos y combos).
 
-### Características Principales
-* **Catálogo Digital:** Visualización de productos organizados por categorías (Sánguches tradicionales, Jugos naturales, Papas huayro, Combos).
-* **Gestión de Pedidos:** Carrito de compras con personalización de pedidos (salsas, tipo de pan, adiciones).
-* **Inventario en Tiempo Real:** Actualización automática del stock de insumos y productos terminados tras cada venta.
-* **Panel de Administración:** Control de ventas, reportes de stock crítico y gestión de usuarios.
+---
+
+## ✨ Características Principales
+
+- **Catálogo Digital:** Visualización de productos organizados por categorías (Sánguches tradicionales, Jugos naturales, Papas huayro, Combos).
+- **Gestión de Pedidos:** Carrito de compras con personalización de pedidos (salsas, tipo de pan, adiciones).
+- **Inventario en Tiempo Real:** Actualización automática del stock de insumos y productos terminados tras cada venta.
+- **Panel de Administración:** Control de ventas, reportes de stock crítico y gestión de usuarios.
 
 ---
 
-## 🛠️ Tecnologías Utilizadas
+## 🛠️ Tecnologías y Entorno de Desarrollo
 
-* **Frontend:** React.js / HTML5, CSS3, JavaScript
-* **Backend:** Node.js / Express
-* **Base de Datos:** PostgreSQL / MongoDB
-* **Control de Versiones:** Git & GitHub
-* **Metodología:** Scrum
+- **Lenguajes y Tecnologías Frontend:** React.js / HTML5, CSS3, JavaScript
+- **Framework / Backend:** Spring Boot 3.x
+- **IDE(s) Utilizado(s):** VS Code
+- **Motor y Versión de Base de Datos:** PostgreSQL
+- **Plataforma Cloud Elegida:** Azure
+- **Control de Versiones:** Git & GitHub
+- **Metodología:** Scrum
 
 ---
 

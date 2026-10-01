@@ -11,24 +11,25 @@ import {
 import { PiDrop } from 'react-icons/pi'
 
 import Navbar from './components/Navbar/Navbar/Navbar.jsx'
+import Login from './pages/Login.jsx'
+import RegisterForm from './components/Auth/RegisterForm.jsx'
+import EmailVerificationNotice from './components/Auth/EmailVerificationNotice.jsx'
 import Catalogo from './pages/Catalogo.jsx'
 import Login from './pages/Login.jsx'
 import heroImg from './assets/images/hero-sanguche.jpg'
 
+import heroImg from './assets/images/hero-sanguche.jpg'
 
 function Home() {
   return (
     <>
       {/* ================= NAVBAR ================= */}
-      <Navbar />
 
       <main>
         {/* ================= HERO ================= */}
         <section className="hero-section">
           <Container>
             <Row className="align-items-center g-5">
-
-              {/* ---------- TEXTO ---------- */}
               <Col xs={12} lg={6}>
                 <span className="hero-badge">
                   ESPECIALIDAD LA LUCHA
@@ -179,7 +180,6 @@ function Home() {
 
                 <span>Postres</span>
               </a>
-
             </div>
           </Container>
         </section>
@@ -189,8 +189,50 @@ function Home() {
         <section id="catalogo">
           <Catalogo />
         </section>
-
       </main>
+
+      {/* ================= LOGIN ================= */}
+
+      {authView === 'login' && (
+        <Login
+          onClose={handleCloseAuth}
+          onRegister={handleOpenRegister}
+        />
+      )}
+
+      {/* ================= REGISTRO ================= */}
+
+      {authView === 'register' && (
+        <div className="auth-overlay">
+          <RegisterForm
+            onSuccess={handleRegisterSuccess}
+            onClose={handleCloseAuth}
+            onLogin={handleOpenLogin}
+          />
+        </div>
+      )}
+
+      {/* ================= VERIFICACIÓN ================= */}
+
+      {authView === 'verify' && registeredEmail && (
+        <div className="auth-overlay">
+          <div className="auth-verification-modal">
+            <button
+              type="button"
+              className="auth-close-button"
+              onClick={handleCloseAuth}
+              aria-label="Cerrar verificación"
+            >
+              ×
+            </button>
+
+            <EmailVerificationNotice
+              email={registeredEmail}
+              onVerified={handleVerificationSuccess}
+            />
+          </div>
+        </div>
+      )}
     </>
   )
 }

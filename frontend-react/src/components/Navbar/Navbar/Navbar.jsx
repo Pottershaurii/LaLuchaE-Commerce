@@ -8,7 +8,15 @@ import {
 
 import logo from '../../../assets/logo.png'
 
-function Navbar() {
+import {
+  LuSearch,
+  LuUserRound,
+  LuShoppingBag
+} from 'react-icons/lu'
+
+import logo from '../../../assets/images/logo.png'
+
+function Navbar({ onOpenAuth }) {
   return (
     <BootstrapNavbar
       expand="lg"

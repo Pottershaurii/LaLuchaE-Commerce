@@ -1,179 +1,896 @@
-/* ===== NAVBAR ===== */
-
-.navbar {
-  background-color: var(--color-primary) !important;
-  border-bottom: 1px solid #302a24;
-}
-
-.navbar-brand {
-  color: var(--color-light) !important;
-}
-
-.navbar .nav-link {
-  color: var(--color-text-light) !important;
-  font-weight: 600;
-  margin: 0 10px;
-}
-
-.navbar .nav-link:hover {
-  color: var(--color-gold) !important;
-}
+/* =========================================================
+   LA LUCHA - BOOTSTRAP CUSTOM
+========================================================= */
 
 
-/* ===== BOTONES ===== */
+/* =========================================================
+   NAVBAR
+========================================================= */
 
-.btn-primary {
-  background-color: var(--color-gold);
-  border-color: var(--color-gold);
-  color: var(--color-primary);
-  font-weight: 700;
-  padding: 12px 28px;
-  border-radius: var(--radius-sm);
-}
+.lalucha-navbar {
+  width: 100% !important;
+  min-height: 86px !important;
+  padding: 0 !important;
+  margin: 0 !important;
 
-.btn-primary:hover {
-  background-color: var(--color-gold-light);
-  border-color: var(--color-gold-light);
-  color: var(--color-primary);
+  background: #151412 !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.10) !important;
+
+  position: relative !important;
+  z-index: 1000 !important;
 }
 
 
-/* ===== TARJETAS ===== */
+/* ================= CONTENEDOR NAVBAR ================= */
 
-.card {
-  border: none;
-  border-radius: var(--radius-md);
+.lalucha-navbar .navbar-container {
+  width: 100% !important;
+  max-width: 1380px !important;
+  min-height: 86px !important;
+
+  margin: 0 auto !important;
+
+  padding-left: 32px !important;
+  padding-right: 32px !important;
+
+  display: flex !important;
+  align-items: center !important;
+}
+
+
+/* ================= MARCA ================= */
+
+.lalucha-navbar .lalucha-brand {
+  width: auto !important;
+  min-width: 245px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 12px !important;
+
+  text-decoration: none !important;
+}
+
+
+/* ================= LOGO ================= */
+
+.lalucha-navbar .navbar-logo-img {
+  width: 52px !important;
+  height: 52px !important;
+
+  min-width: 52px !important;
+  max-width: 52px !important;
+
+  min-height: 52px !important;
+  max-height: 52px !important;
+
+  object-fit: contain !important;
+
+  display: block !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  position: static !important;
+  transform: none !important;
+
+  flex-shrink: 0 !important;
+}
+
+.lalucha-navbar .navbar-brand img {
+  width: 52px !important;
+  height: 52px !important;
+
+  max-width: 52px !important;
+  max-height: 52px !important;
+
+  object-fit: contain !important;
+}
+
+
+/* ================= TEXTO MARCA ================= */
+
+.lalucha-navbar .navbar-brand-text {
+  width: auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+
+  line-height: 1 !important;
+}
+
+.lalucha-navbar .navbar-brand-title {
+  color: #f8f1df !important;
+
+  font-family: Georgia, "Times New Roman", serif !important;
+  font-size: 20px !important;
+  font-weight: 800 !important;
+
+  letter-spacing: 1px !important;
+
+  white-space: nowrap !important;
+}
+
+.lalucha-navbar .navbar-brand-subtitle {
+  margin-top: 6px !important;
+
+  color: #dfa128 !important;
+
+  font-size: 10px !important;
+  font-weight: 800 !important;
+
+  letter-spacing: 0.8px !important;
+
+  white-space: nowrap !important;
+}
+
+
+/* ================= COLLAPSE ================= */
+
+.lalucha-navbar .navbar-collapse {
+  min-height: 86px !important;
+
+  align-items: center !important;
+}
+
+
+/* ================= MENÚ CENTRAL ================= */
+
+.lalucha-navbar .navbar-menu {
+  min-height: 86px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 25px !important;
+}
+
+.lalucha-navbar .navbar-link {
+  position: relative !important;
+
+  min-height: 86px !important;
+
+  margin: 0 !important;
+  padding: 0 5px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  color: #d9caa6 !important;
+
+  font-size: 14px !important;
+  font-weight: 700 !important;
+
+  text-decoration: none !important;
+
+  white-space: nowrap !important;
+
+  transition: color 0.2s ease !important;
+}
+
+.lalucha-navbar .navbar-link:hover {
+  color: #dfa128 !important;
+}
+
+.lalucha-navbar .navbar-link.active {
+  color: #dfa128 !important;
+}
+
+.lalucha-navbar .navbar-link.active::after {
+  content: "" !important;
+
+  position: absolute !important;
+
+  left: 5px !important;
+  right: 5px !important;
+  bottom: 20px !important;
+
+  height: 2px !important;
+
+  background: #dfa128 !important;
+
+  border-radius: 5px !important;
+}
+
+
+/* ================= ACCIONES DERECHA ================= */
+
+.lalucha-navbar .navbar-actions {
+  min-height: 86px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 14px !important;
+}
+
+
+/* ================= RESET BOTONES ================= */
+
+.lalucha-navbar .navbar-icon-button,
+.lalucha-navbar .navbar-login-button,
+.lalucha-navbar .navbar-cart-button {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+
+  border: none !important;
+  outline: none !important;
+  box-shadow: none !important;
+
+  font-family: inherit !important;
+}
+
+
+/* ================= BUSCAR ================= */
+
+.lalucha-navbar .navbar-icon-button {
+  width: 38px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  background: transparent !important;
+
+  color: #d9caa6 !important;
+
+  cursor: pointer !important;
+}
+
+.lalucha-navbar .navbar-icon-button svg {
+  width: 21px !important;
+  height: 21px !important;
+}
+
+.lalucha-navbar .navbar-icon-button:hover {
+  color: #dfa128 !important;
+}
+
+
+/* ================= INGRESAR ================= */
+
+.lalucha-navbar .navbar-login-button {
+  width: auto !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 3px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 8px !important;
+
+  background: transparent !important;
+
+  color: #e6bd5b !important;
+
+  font-size: 13px !important;
+  font-weight: 700 !important;
+
+  cursor: pointer !important;
+}
+
+.lalucha-navbar .navbar-login-button svg,
+.lalucha-navbar .navbar-user-icon {
+  width: 21px !important;
+  height: 21px !important;
+
+  color: #d9caa6 !important;
+}
+
+.lalucha-navbar .navbar-login-button:hover {
+  color: #f0ad2e !important;
+}
+
+.lalucha-navbar .navbar-login-button:hover svg,
+.lalucha-navbar .navbar-login-button:hover .navbar-user-icon {
+  color: #f0ad2e !important;
+}
+
+
+/* ================= CARRITO ================= */
+
+.lalucha-navbar .navbar-cart-button {
+  position: relative !important;
+
+  width: 45px !important;
+  height: 45px !important;
+
+  min-width: 45px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  border-radius: 50% !important;
+
+  background: #d79328 !important;
+
+  color: #171512 !important;
+
+  cursor: pointer !important;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease !important;
+}
+
+.lalucha-navbar .navbar-cart-button svg {
+  width: 20px !important;
+  height: 20px !important;
+}
+
+.lalucha-navbar .navbar-cart-button:hover {
+  background: #efb13c !important;
+
+  transform: translateY(-1px) !important;
+}
+
+
+/* ================= CONTADOR CARRITO ================= */
+
+.lalucha-navbar .navbar-cart-count {
+  position: absolute !important;
+
+  top: -5px !important;
+  right: -5px !important;
+
+  min-width: 18px !important;
+  height: 18px !important;
+
+  padding: 0 4px !important;
+
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+
+  border: 2px solid #151412 !important;
+  border-radius: 50% !important;
+
+  background: #e52b20 !important;
+
+  color: #ffffff !important;
+
+  font-size: 10px !important;
+  font-weight: 800 !important;
+}
+
+
+/* ================= BOTÓN HAMBURGUESA ================= */
+
+.lalucha-navbar .navbar-toggle {
+  border: 1px solid #dfa128 !important;
+
+  box-shadow: none !important;
+}
+
+.lalucha-navbar .navbar-toggle:focus {
+  box-shadow: none !important;
+}
+
+.lalucha-navbar .navbar-toggler-icon {
+  filter: invert(1) !important;
+}
+
+
+/* =========================================================
+   HERO
+========================================================= */
+
+.hero-section {
+  width: 100%;
+  min-height: 535px;
+
+  display: flex;
+  align-items: center;
+
+  padding: 55px 0 35px;
+
+  background:
+    radial-gradient(
+      circle at 55% 40%,
+      #2a2118 0%,
+      #1c1814 45%,
+      #151412 100%
+    );
+
   overflow: hidden;
 }
 
-.card-title {
-  font-weight: 700;
+.hero-section .container {
+  width: 100%;
+  max-width: 1380px;
+
+  margin: 0 auto;
+
+  padding-left: 32px;
+  padding-right: 32px;
 }
 
-/* ========================================
-   CATEGORÍAS - LA LUCHA
-======================================== */
+
+/* ================= TEXTO HERO ================= */
+
+.hero-badge {
+  display: inline-block;
+
+  margin-bottom: 12px;
+
+  padding: 6px 14px;
+
+  border: 1px solid #805714;
+  border-radius: 20px;
+
+  color: #e5a12a;
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: 1px;
+}
+
+.hero-title {
+  margin: 0 0 5px;
+
+  color: #f8f1df;
+
+  font-size: clamp(55px, 5vw, 78px);
+  font-weight: 900;
+
+  line-height: 0.94;
+
+  letter-spacing: -2px;
+}
+
+.hero-script {
+  margin: 10px 0 12px;
+
+  color: #ffffff;
+
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.hero-description {
+  max-width: 600px;
+
+  margin-bottom: 20px;
+
+  color: #f4eee5;
+
+  font-size: 15px;
+
+  line-height: 1.6;
+}
+
+
+/* ================= BOTONES HERO ================= */
+
+.btn-hero-primary,
+.btn-hero-secondary {
+  padding: 12px 24px !important;
+
+  border: 1px solid #d79328 !important;
+  border-radius: 5px !important;
+
+  background: #d79328 !important;
+
+  color: #171512 !important;
+
+  font-weight: 700 !important;
+
+  box-shadow: none !important;
+}
+
+.btn-hero-primary:hover,
+.btn-hero-secondary:hover {
+  background: #efaa31 !important;
+
+  border-color: #efaa31 !important;
+
+  color: #171512 !important;
+}
+
+
+/* ================= IMAGEN HERO ================= */
+
+.hero-image-container {
+  position: relative !important;
+
+  width: 100% !important;
+  max-width: 570px !important;
+
+  height: 360px !important;
+
+  margin: 0 auto !important;
+
+  overflow: visible !important;
+}
+
+.hero-image {
+  width: 100% !important;
+  height: 360px !important;
+
+  max-width: 570px !important;
+
+  display: block !important;
+
+  object-fit: cover !important;
+  object-position: center !important;
+
+  border: 1px solid #805714 !important;
+  border-radius: 16px !important;
+}
+
+
+/* ================= FLECHAS HERO ================= */
+
+.hero-arrow {
+  position: absolute !important;
+
+  top: 50% !important;
+
+  width: 46px !important;
+  height: 46px !important;
+
+  padding: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  transform: translateY(-50%) !important;
+
+  border: 1px solid #805714 !important;
+  border-radius: 50% !important;
+
+  background: #171513 !important;
+
+  color: #f2bd42 !important;
+
+  font-size: 32px !important;
+
+  z-index: 5 !important;
+}
+
+.hero-arrow-left {
+  left: -23px !important;
+}
+
+.hero-arrow-right {
+  right: -23px !important;
+}
+
+
+/* ================= INDICADORES HERO ================= */
+
+.hero-dots {
+  display: flex !important;
+
+  justify-content: center !important;
+  align-items: center !important;
+
+  gap: 9px !important;
+
+  margin-top: 25px !important;
+}
+
+.hero-dot {
+  width: 10px !important;
+  height: 10px !important;
+
+  display: block !important;
+
+  border-radius: 50% !important;
+
+  background: #746a45 !important;
+}
+
+.hero-dot.active {
+  width: 30px !important;
+
+  border-radius: 10px !important;
+
+  background: #d79328 !important;
+}
+
+
+/* =========================================================
+   CATEGORÍAS
+========================================================= */
 
 .categorias-section {
-  background: #f8f4eb;
-  padding: 30px 0 42px;
+  width: 100%;
+
+  background: #f8f5ee;
+
+  padding: 28px 0 40px;
+
   border-bottom: 1px solid #e5ddce;
 }
 
 .categorias-section .container {
-  max-width: 1320px;
+  width: 100%;
+  max-width: 1380px;
+
+  margin: 0 auto;
+
+  padding-left: 32px;
+  padding-right: 32px;
 }
+
+
+/* ================= CABECERA CATEGORÍAS ================= */
 
 .categorias-header {
   display: flex;
+
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 25px;
+
+  margin-bottom: 28px;
 }
 
 .categorias-header h2 {
   margin: 0;
-  color: #171411;
+
+  color: #151515;
+
   font-size: 25px;
   font-weight: 800;
 }
 
 .categorias-header a {
   color: #8f2d12;
+
   font-size: 14px;
   font-weight: 500;
+
   text-decoration: none;
-  transition: 0.2s ease;
 }
 
 .categorias-header a:hover {
-  color: #c88927;
+  color: #b13b18;
+
+  text-decoration: none;
 }
 
-/* CONTENEDOR DE LOS 5 ELEMENTOS */
+
+/* ================= LISTA CATEGORÍAS ================= */
+
 .categorias-list {
   display: flex;
+
   justify-content: center;
   align-items: flex-start;
+
   gap: 32px;
 }
 
-/* CADA CATEGORÍA */
 .categoria-item {
   width: 92px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
+
   gap: 10px;
 
   color: #211b17;
+
   text-decoration: none;
-
-  cursor: pointer;
 }
 
-.categoria-item:hover {
-  color: #8f2d12;
-}
-
-/* CÍRCULOS */
 .categoria-icon {
-  width: 88px;
-  height: 88px;
+  width: 90px;
+  height: 90px;
 
   display: flex;
-  align-items: center;
-  justify-content: center;
 
-  background: #f3ead8;
+  justify-content: center;
+  align-items: center;
+
   border: 2px solid #ded0b5;
   border-radius: 50%;
 
-  color: #29221e;
-  font-size: 29px;
+  background: #f3ead8;
 
-  box-shadow: 0 2px 3px rgba(0, 0, 0, 0.08);
+  color: #29221e;
+
+  font-size: 28px;
+
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
 
   transition:
-    transform 0.2s ease,
-    background 0.2s ease,
-    border-color 0.2s ease;
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
 }
 
-.categoria-item:hover .categoria-icon {
-  transform: translateY(-3px);
-  border-color: #d59a39;
+.categoria-icon svg {
+  width: 28px;
+  height: 28px;
 }
 
-/* CATEGORÍA ACTIVA */
+.categoria-item span {
+  color: #211b17;
+
+  font-size: 14px;
+  font-weight: 500;
+
+  white-space: nowrap;
+}
+
+
+/* ================= CATEGORÍA ACTIVA ================= */
+
 .categoria-item.active .categoria-icon {
   background: #efb75c;
+
   border-color: #d48c1d;
 
   box-shadow:
     0 0 0 4px #f1dfbd,
-    0 2px 4px rgba(0, 0, 0, 0.12);
+    0 2px 4px rgba(0, 0, 0, 0.10);
 }
 
 .categoria-item.active span {
   color: #9c3215;
 }
 
-/* TEXTO */
-.categoria-item span {
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
+
+/* ================= HOVER CATEGORÍAS ================= */
+
+.categoria-item:hover {
+  color: #9c3215;
+
+  text-decoration: none;
 }
 
-/* ========================================
-   RESPONSIVE
-======================================== */
+.categoria-item:hover .categoria-icon {
+  border-color: #d48c1d;
+
+  transform: translateY(-2px);
+}
+
+.categoria-item:hover span {
+  color: #9c3215;
+}
+
+
+/* =========================================================
+   TABLET
+========================================================= */
+
+@media (max-width: 991.98px) {
+
+  /* NAVBAR */
+
+  .lalucha-navbar {
+    min-height: 72px !important;
+
+    padding: 10px 0 !important;
+  }
+
+  .lalucha-navbar .navbar-container {
+    min-height: 52px !important;
+
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  .lalucha-navbar .lalucha-brand {
+    min-width: auto !important;
+  }
+
+  .lalucha-navbar .navbar-logo-img,
+  .lalucha-navbar .navbar-brand img {
+    width: 44px !important;
+    height: 44px !important;
+
+    min-width: 44px !important;
+    max-width: 44px !important;
+
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+
+  .lalucha-navbar .navbar-brand-title {
+    font-size: 18px !important;
+  }
+
+  .lalucha-navbar .navbar-brand-subtitle {
+    font-size: 8px !important;
+  }
+
+  .lalucha-navbar .navbar-collapse {
+    min-height: auto !important;
+
+    padding-top: 15px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .lalucha-navbar .navbar-menu {
+    width: 100% !important;
+
+    min-height: auto !important;
+
+    display: flex !important;
+    flex-direction: column !important;
+
+    align-items: flex-start !important;
+
+    gap: 0 !important;
+  }
+
+  .lalucha-navbar .navbar-link {
+    width: 100% !important;
+
+    min-height: auto !important;
+
+    padding: 11px 0 !important;
+  }
+
+  .lalucha-navbar .navbar-link.active::after {
+    display: none !important;
+  }
+
+  .lalucha-navbar .navbar-actions {
+    min-height: auto !important;
+
+    margin-top: 12px !important;
+
+    justify-content: flex-start !important;
+  }
+
+
+  /* HERO */
+
+  .hero-section {
+    min-height: auto;
+
+    padding: 45px 0;
+  }
+
+  .hero-title {
+    font-size: 58px;
+  }
+
+  .hero-image-container,
+  .hero-image {
+    height: 330px !important;
+  }
+}
+
+
+/* =========================================================
+   CATEGORÍAS TABLET / MÓVIL
+========================================================= */
 
 @media (max-width: 768px) {
 
-  .categorias-section {
-    padding: 25px 0 30px;
+  .categorias-section .container {
+    padding-left: 20px;
+    padding-right: 20px;
   }
 
   .categorias-header {
@@ -186,149 +903,98 @@
 
   .categorias-list {
     justify-content: flex-start;
+
     gap: 20px;
 
     overflow-x: auto;
-    padding: 5px 5px 15px;
 
-    scrollbar-width: thin;
+    padding: 5px 5px 15px;
   }
 
   .categoria-item {
+    width: 78px;
     min-width: 78px;
   }
 
   .categoria-icon {
     width: 72px;
     height: 72px;
+
     font-size: 24px;
+  }
+
+  .categoria-icon svg {
+    width: 24px;
+    height: 24px;
   }
 
   .categoria-item span {
     font-size: 13px;
   }
 }
-/* ===== IMAGEN HERO ===== */
 
-.hero-image-container {
-  position: relative;
-  width: 100%;
-  max-width: 570px;
-  margin: 0 auto;
-}
 
-.hero-image {
-  width: 100%;
-  height: 420px;
-  object-fit: cover;
+/* =========================================================
+   CELULAR
+========================================================= */
 
-  display: block;
+@media (max-width: 576px) {
 
-  border-radius: 16px;
-  border: 1px solid #805714;
-}
+  /* NAVBAR */
 
-/* ===== FLECHAS ===== */
-
-.hero-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-
-  width: 48px;
-  height: 48px;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding: 0;
-
-  border: 1px solid #805714;
-  border-radius: 50%;
-
-  background: #171513;
-  color: #f2bd42;
-
-  font-size: 35px;
-  font-weight: 300;
-  line-height: 1;
-
-  cursor: pointer;
-
-  z-index: 5;
-
-  transition: 0.2s ease;
-}
-
-.hero-arrow:hover {
-  background: #d79328;
-  color: #171513;
-}
-
-/* Flecha izquierda sobresaliendo de la imagen */
-.hero-arrow-left {
-  left: -24px;
-}
-
-/* Flecha derecha sobresaliendo de la imagen */
-.hero-arrow-right {
-  right: -24px;
-}
-
-/* ===== INDICADORES ===== */
-
-.hero-dots {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  gap: 9px;
-
-  margin-top: 34px;
-}
-
-.hero-dot {
-  display: block;
-
-  width: 11px;
-  height: 11px;
-
-  border-radius: 50%;
-
-  background: #746a45;
-}
-
-.hero-dot.active {
-  width: 35px;
-  border-radius: 20px;
-
-  background: #d79328;
-}
-
-/* ===== CELULAR ===== */
-
-@media (max-width: 768px) {
-
-  .hero-image {
-    height: 300px;
+  .lalucha-navbar .navbar-container {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
   }
 
-  .hero-arrow {
-    width: 40px;
-    height: 40px;
-    font-size: 29px;
+  .lalucha-navbar .navbar-logo-img,
+  .lalucha-navbar .navbar-brand img {
+    width: 40px !important;
+    height: 40px !important;
+
+    min-width: 40px !important;
+    max-width: 40px !important;
+
+    min-height: 40px !important;
+    max-height: 40px !important;
+  }
+
+  .lalucha-navbar .navbar-brand-title {
+    font-size: 16px !important;
+  }
+
+  .lalucha-navbar .navbar-brand-subtitle {
+    margin-top: 4px !important;
+
+    font-size: 7px !important;
+  }
+
+
+  /* HERO */
+
+  .hero-section .container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .hero-title {
+    font-size: 45px;
+  }
+
+  .hero-script {
+    font-size: 24px;
+  }
+
+  .hero-image-container,
+  .hero-image {
+    height: 270px !important;
   }
 
   .hero-arrow-left {
-    left: 8px;
+    left: 8px !important;
   }
 
   .hero-arrow-right {
-    right: 8px;
-  }
-
-  .hero-dots {
-    margin-top: 20px;
+    right: 8px !important;
   }
 }
