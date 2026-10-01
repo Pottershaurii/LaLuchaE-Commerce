@@ -1,3 +1,5 @@
+import api from './api'
+
 const API_URL = 'http://localhost:8080/api/auth'
 
 /* ========================================
@@ -91,41 +93,38 @@ export const verifyEmailToken = async (email, code) => {
   }
 }
 
-/* ========================================
-   LOGIN
-   Temporal hasta conectar login al backend
-======================================== */
 export const loginUser = async (correo, password) => {
   if (!correo || !password) {
     throw new Error('Debes ingresar correo y contraseña.')
   }
 
-  const authenticatedUser = {
-    email: correo,
-    nombre: 'Usuario La Lucha'
+  const response = await api.post('/auth/login', {
+    correo,
+    password
+  })
+
+  const token = response.data?.token
+
+  if (token) {
+    localStorage.setItem('token', token)
   }
 
-  localStorage.setItem(
-    'lalucha_user',
-    JSON.stringify(authenticatedUser)
-  )
+  const authenticatedUser = response.data?.user ?? { email: correo }
 
+  localStorage.setItem('lalucha_user', JSON.stringify(authenticatedUser))
   localStorage.setItem(
     'lalucha_authenticated',
     'true'
   )
 
-  return {
-    success: true,
-    user: authenticatedUser,
-    message: 'Inicio de sesión correcto.'
-  }
+  return response.data
 }
 
 /* ========================================
    CERRAR SESIÓN
 ======================================== */
 export const logoutUser = () => {
+  localStorage.removeItem('token')
   localStorage.removeItem('lalucha_user')
   localStorage.removeItem('lalucha_authenticated')
 }
@@ -135,6 +134,7 @@ export const logoutUser = () => {
 ======================================== */
 export const isAuthenticated = () => {
   return (
+    !!localStorage.getItem('token') ||
     localStorage.getItem('lalucha_authenticated') === 'true'
   )
 }

@@ -1,0 +1,557 @@
+/* =====================================================
+   NAVBAR LA LUCHA
+===================================================== */
+
+.lalucha-navbar {
+  width: 100% !important;
+  height: 88px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  background: #171614 !important;
+  border-bottom: 1px solid #302c27 !important;
+
+  position: relative;
+  z-index: 1000;
+}
+
+
+/* =====================================================
+   CONTENEDOR
+===================================================== */
+
+.lalucha-navbar-container {
+  width: 100% !important;
+  max-width: 1400px !important;
+  height: 88px !important;
+
+  margin: 0 auto !important;
+
+  padding-left: 24px !important;
+  padding-right: 24px !important;
+
+  display: flex !important;
+  align-items: center !important;
+}
+
+
+/* =====================================================
+   LOGO + MARCA
+===================================================== */
+
+.lalucha-brand {
+  height: 88px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 13px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  text-decoration: none !important;
+
+  flex-shrink: 0 !important;
+}
+
+
+/* CONTENEDOR QUE OBLIGA AL LOGO A SER PEQUEÑO */
+
+.lalucha-logo-wrapper {
+  width: 52px !important;
+  height: 52px !important;
+
+  min-width: 52px !important;
+  max-width: 52px !important;
+
+  min-height: 52px !important;
+  max-height: 52px !important;
+
+  display: block !important;
+
+  overflow: hidden !important;
+
+  border: 2px solid #d59028 !important;
+  border-radius: 50% !important;
+
+  background: #171614 !important;
+
+  box-sizing: border-box !important;
+
+  flex: 0 0 52px !important;
+}
+
+
+/* IMAGEN REAL */
+
+.lalucha-logo-wrapper .lalucha-logo-img {
+  width: 100% !important;
+  height: 100% !important;
+
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  min-height: 0 !important;
+  max-height: 100% !important;
+
+  display: block !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  object-fit: cover !important;
+  object-position: center !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  transform: none !important;
+}
+
+
+/* TEXTO MARCA */
+
+.lalucha-brand-info {
+  display: flex !important;
+  flex-direction: column !important;
+
+  justify-content: center !important;
+
+  width: auto !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+
+.lalucha-brand-name {
+  display: block !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #f3eee5 !important;
+
+  font-family: Georgia, 'Times New Roman', serif !important;
+
+  font-size: 23px !important;
+  font-weight: 700 !important;
+
+  line-height: 23px !important;
+
+  letter-spacing: 0.5px !important;
+
+  white-space: nowrap !important;
+}
+
+
+.lalucha-brand-description {
+  display: block !important;
+
+  margin: 5px 0 0 !important;
+  padding: 0 !important;
+
+  color: #d7922e !important;
+
+  font-size: 11px !important;
+  font-weight: 700 !important;
+
+  line-height: 12px !important;
+
+  letter-spacing: 1.3px !important;
+
+  white-space: nowrap !important;
+}
+
+
+/* =====================================================
+   COLLAPSE
+===================================================== */
+
+.lalucha-navbar-collapse {
+  height: 88px !important;
+
+  align-items: center !important;
+}
+
+
+/* =====================================================
+   MENÚ CENTRAL
+===================================================== */
+
+.lalucha-menu {
+  height: 88px !important;
+
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+
+  gap: 35px !important;
+
+  margin-left: auto !important;
+  margin-right: auto !important;
+
+  padding: 0 !important;
+}
+
+
+.lalucha-menu-link {
+  height: 88px !important;
+
+  position: relative !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #c6bda3 !important;
+
+  font-size: 14px !important;
+  font-weight: 600 !important;
+
+  line-height: normal !important;
+
+  text-decoration: none !important;
+
+  white-space: nowrap !important;
+}
+
+
+.lalucha-menu-link:hover {
+  color: #df9a31 !important;
+}
+
+
+.lalucha-menu-active {
+  color: #df9a31 !important;
+}
+
+
+.lalucha-menu-active::after {
+  content: '' !important;
+
+  position: absolute !important;
+
+  left: 0 !important;
+  right: 0 !important;
+
+  bottom: 23px !important;
+
+  height: 2px !important;
+
+  background: #df9a31 !important;
+}
+
+
+/* =====================================================
+   ACCIONES DERECHA
+===================================================== */
+
+.lalucha-actions {
+  height: 88px !important;
+
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 18px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  flex-shrink: 0 !important;
+}
+
+
+/* =====================================================
+   BUSCAR
+===================================================== */
+
+.lalucha-action-search {
+  width: 35px !important;
+  height: 45px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+
+  background: transparent !important;
+
+  color: #d4c9a6 !important;
+
+  cursor: pointer !important;
+}
+
+
+.lalucha-action-search svg {
+  width: 22px !important;
+  height: 22px !important;
+
+  display: block !important;
+}
+
+
+.lalucha-action-search:hover {
+  color: #df9a31 !important;
+}
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+.lalucha-action-login {
+  display: flex !important;
+  align-items: center !important;
+
+  gap: 8px !important;
+
+  margin: 0 !important;
+  padding: 8px 0 !important;
+
+  border: 0 !important;
+
+  background: transparent !important;
+
+  color: #d6c28b !important;
+
+  font-size: 13px !important;
+  font-weight: 700 !important;
+
+  line-height: normal !important;
+
+  text-decoration: none !important;
+
+  white-space: nowrap !important;
+}
+
+
+.lalucha-action-login:link,
+.lalucha-action-login:visited,
+.lalucha-action-login:active {
+  color: #d6c28b !important;
+
+  text-decoration: none !important;
+}
+
+
+.lalucha-action-login:hover {
+  color: #df9a31 !important;
+}
+
+
+.lalucha-action-login svg {
+  width: 20px !important;
+  height: 20px !important;
+
+  display: block !important;
+}
+
+
+/* =====================================================
+   CARRITO
+===================================================== */
+
+.lalucha-action-cart {
+  position: relative !important;
+
+  width: 45px !important;
+  height: 45px !important;
+
+  min-width: 45px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  outline: 0 !important;
+
+  border-radius: 50% !important;
+
+  background: #d89128 !important;
+
+  color: #181614 !important;
+
+  cursor: pointer !important;
+}
+
+
+.lalucha-action-cart svg {
+  width: 21px !important;
+  height: 21px !important;
+
+  display: block !important;
+}
+
+
+.lalucha-action-cart:hover {
+  background: #e3a03a !important;
+}
+
+
+/* CONTADOR */
+
+.lalucha-cart-badge {
+  position: absolute !important;
+
+  top: -6px !important;
+  right: -5px !important;
+
+  width: 21px !important;
+  height: 21px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  padding: 0 !important;
+
+  border: 2px solid #171614 !important;
+  border-radius: 50% !important;
+
+  background: #ed1717 !important;
+
+  color: #ffffff !important;
+
+  font-size: 11px !important;
+  font-weight: 800 !important;
+
+  line-height: 1 !important;
+}
+
+
+/* =====================================================
+   TOGGLE
+===================================================== */
+
+.lalucha-navbar-toggle {
+  border: 1px solid #8d652a !important;
+
+  box-shadow: none !important;
+}
+
+
+.lalucha-navbar-toggle:focus {
+  box-shadow: none !important;
+}
+
+
+.lalucha-navbar-toggle .navbar-toggler-icon {
+  filter: invert(1) !important;
+}
+
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (max-width: 991px) {
+
+  .lalucha-navbar {
+    height: auto !important;
+
+    min-height: 76px !important;
+
+    padding: 10px 0 !important;
+  }
+
+
+  .lalucha-navbar-container {
+    height: auto !important;
+
+    min-height: 56px !important;
+  }
+
+
+  .lalucha-brand {
+    height: 56px !important;
+  }
+
+
+  .lalucha-logo-wrapper {
+    width: 46px !important;
+    height: 46px !important;
+
+    min-width: 46px !important;
+    max-width: 46px !important;
+
+    min-height: 46px !important;
+    max-height: 46px !important;
+
+    flex-basis: 46px !important;
+  }
+
+
+  .lalucha-brand-name {
+    font-size: 20px !important;
+  }
+
+
+  .lalucha-brand-description {
+    font-size: 9px !important;
+  }
+
+
+  .lalucha-navbar-collapse {
+    height: auto !important;
+
+    margin-top: 10px !important;
+
+    padding: 15px 0 !important;
+
+    border-top: 1px solid #302c27 !important;
+
+    background: #171614 !important;
+  }
+
+
+  .lalucha-menu {
+    width: 100% !important;
+    height: auto !important;
+
+    flex-direction: column !important;
+    align-items: flex-start !important;
+
+    gap: 0 !important;
+
+    margin: 0 !important;
+  }
+
+
+  .lalucha-menu-link {
+    width: 100% !important;
+    height: auto !important;
+
+    padding: 11px 0 !important;
+  }
+
+
+  .lalucha-menu-active::after {
+    display: none !important;
+  }
+
+
+  .lalucha-actions {
+    width: 100% !important;
+    height: auto !important;
+
+    margin-top: 12px !important;
+
+    padding-top: 15px !important;
+
+    border-top: 1px solid #302c27 !important;
+  }
+}

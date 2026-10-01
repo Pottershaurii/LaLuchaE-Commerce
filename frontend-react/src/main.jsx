@@ -7,6 +7,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import './styles/variables.css'
 import './styles/global.css'
 import './styles/bootstrap-custom.css'
+import './styles/navbar.css'
+import './styles/login.css'
 
 import App from './App.jsx'
 import { AuthProvider } from './context/AuthContext.jsx'

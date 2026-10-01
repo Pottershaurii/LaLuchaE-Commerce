@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import '../styles/login.css'
 import logo from '../assets/images/logo.png'
 
 function Login({ onClose, onRegister }) {
   const { login } = useAuth()
+  const navigate = useNavigate()
 
   const [correo, setCorreo] = useState('')
   const [password, setPassword] = useState('')
@@ -24,6 +26,8 @@ function Login({ onClose, onRegister }) {
 
       if (onClose) {
         onClose()
+      } else {
+        navigate('/')
       }
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
@@ -75,7 +79,7 @@ function Login({ onClose, onRegister }) {
           <button
             type="button"
             className="login-close"
-            onClick={onClose}
+            onClick={onClose || (() => navigate('/'))}
             aria-label="Cerrar login"
           >
             ×
