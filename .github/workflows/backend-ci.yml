@@ -1,0 +1,62 @@
+name: Backend CI
+
+# Compila el backend y ejecuta las pruebas contra un PostgreSQL
+# creado con database/schema.sql + database/seed.sql
+on:
+  pull_request:
+    paths:
+      - 'lalucha-backend/**'
+      - 'database/**'
+      - '.github/workflows/backend-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'lalucha-backend/**'
+      - 'database/**'
+  workflow_dispatch:
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lalucha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      PGPASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/lalucha?currentSchema=lalucha
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      MAIL_USERNAME: ci@example.com
+      MAIL_PASSWORD: no-usado-en-ci
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Crear schema y datos semilla
+        run: |
+          psql -h localhost -U postgres -d lalucha -v ON_ERROR_STOP=1 -f database/schema.sql
+          psql -h localhost -U postgres -d lalucha -v ON_ERROR_STOP=1 -f database/seed.sql
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Compilar y probar
+        working-directory: lalucha-backend
+        run: mvn -B verify
