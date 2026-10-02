@@ -57,14 +57,14 @@ function Catalogo() {
       nombre: 'Pollo Deshilachado',
       descripcion: 'Sánguche de pollo deshilachado.',
       precio: 12.60,
-      imagen: '/placeholder-producto.jpg',
+      imagen: '/placeholder-producto.svg',
     },
     {
       id: 8,
       nombre: 'Pollo con Piña',
       descripcion: 'Sánguche de pollo acompañado con piña.',
       precio: 14.90,
-      imagen: '/placeholder-producto.jpg',
+      imagen: '/placeholder-producto.svg',
     },
   ]
 
