@@ -20,11 +20,11 @@ INSERT INTO usuarios (rol_id, email, password_hash, nombres, apellidos, telefono
 VALUES
     ((SELECT id FROM roles WHERE codigo = 'ADMIN'),
      'ivan.p@example.net',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+     '$2a$10$rWHVyXuEfnwt/OWo1Jj3ieWwajx7WL/r.2u11uoyRw3dN05K74knG',
      'Rodrigo', 'Bello', '999000001', TRUE, TRUE),
     ((SELECT id FROM roles WHERE codigo = 'CLIENTE'),
      'juan.perez@example.com',
-     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+     '$2a$10$rWHVyXuEfnwt/OWo1Jj3ieWwajx7WL/r.2u11uoyRw3dN05K74knG',
      'Juan', 'Pérez', '999000002', TRUE, TRUE);
 
 -- Cuenta pendiente de verificar (HU-01): hash BCrypt, token con vencimiento
@@ -35,7 +35,7 @@ INSERT INTO usuarios (
 VALUES (
     (SELECT id FROM roles WHERE codigo = 'CLIENTE'),
     'ana.pendiente@example.com',
-    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    '$2a$10$rWHVyXuEfnwt/OWo1Jj3ieWwajx7WL/r.2u11uoyRw3dN05K74knG',
     'Ana', 'Quispe',
     FALSE,
     '483921',
