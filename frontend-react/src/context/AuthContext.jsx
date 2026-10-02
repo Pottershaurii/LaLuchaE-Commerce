@@ -38,6 +38,9 @@ export function AuthProvider({ children }) {
   )
 }
 
+// El hook vive junto al Provider a propósito; la regla de Fast Refresh solo
+// aplica a archivos que exportan componentes.
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext)
 
