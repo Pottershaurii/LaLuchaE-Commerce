@@ -51,7 +51,7 @@ export const registerClient = async (userData) => {
     return data
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No se pudo conectar con el servidor.')
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
     }
 
     throw error
@@ -85,7 +85,7 @@ export const verifyEmailToken = async (email, code) => {
     return data
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No se pudo conectar con el servidor.')
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
     }
 
     throw error
@@ -141,7 +141,7 @@ export const loginUser = async (correo, password) => {
     }
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No se pudo conectar con el servidor.')
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
     }
 
     throw error
