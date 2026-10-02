@@ -25,6 +25,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/checkout/**").permitAll() // Permite probar Checkout en Postman
+                .requestMatchers("/api/health").permitAll()
                 .anyRequest().authenticated()
             );
 
