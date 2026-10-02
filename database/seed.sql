@@ -27,6 +27,22 @@ VALUES
      '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
      'Juan', 'Pérez', '999000002', TRUE, TRUE);
 
+-- Cuenta pendiente de verificar (HU-01): hash BCrypt, token con vencimiento
+INSERT INTO usuarios (
+    rol_id, email, password_hash, nombres, apellidos,
+    email_verificado, token_verificacion, token_expira_en, activo
+)
+VALUES (
+    (SELECT id FROM roles WHERE codigo = 'CLIENTE'),
+    'ana.pendiente@example.com',
+    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy',
+    'Ana', 'Quispe',
+    FALSE,
+    '483921',
+    NOW() + INTERVAL '15 minutes',
+    TRUE
+);
+
 INSERT INTO clientes (usuario_id, dni, direccion, distrito, referencia)
 VALUES (
     (SELECT id FROM usuarios WHERE email = 'juan.perez@example.com'),

@@ -37,6 +37,7 @@ CREATE TABLE usuarios (
     telefono            VARCHAR(20),
     email_verificado    BOOLEAN      NOT NULL DEFAULT FALSE,
     token_verificacion  VARCHAR(120),
+    token_expira_en     TIMESTAMPTZ,             -- Vencimiento del código
     activo              BOOLEAN      NOT NULL DEFAULT TRUE,
     ultimo_acceso       TIMESTAMPTZ,
     created_at          TIMESTAMPTZ  NOT NULL DEFAULT NOW(),
