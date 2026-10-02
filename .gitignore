@@ -26,3 +26,8 @@ replay_pid*
 # Node.js dependencies
 node_modules/
 frontend-react/node_modules/
+
+# Variables de entorno locales (no subir claves)
+.env
+.env.*
+!.env.example
