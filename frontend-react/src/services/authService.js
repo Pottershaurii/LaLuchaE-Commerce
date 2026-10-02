@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:8080/api/auth'
+// Base de la API: se configura con VITE_API_URL (ver .env.example).
+// En local, si no existe, usa el backend en el puerto 8080.
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+
+const API_URL = `${API_BASE_URL}/auth`
 
 /* ========================================
    FUNCIÓN AUXILIAR PARA LEER RESPUESTAS
