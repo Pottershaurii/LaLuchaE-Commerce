@@ -28,11 +28,11 @@ function Login({ onClose, onRegister }) {
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
 
-      if (error.response?.status === 401) {
-        setMensaje('Correo o contraseña incorrectos')
-      } else {
-        setMensaje('No se pudo conectar con el servidor')
-      }
+      // authService lanza un Error con el mensaje del backend
+      // (p. ej. "Las credenciales ingresadas son incorrectas.")
+      setMensaje(
+        error.message || 'No se pudo iniciar sesión.'
+      )
     } finally {
       setCargando(false)
     }

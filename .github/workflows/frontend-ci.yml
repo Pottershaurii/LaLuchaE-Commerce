@@ -1,0 +1,37 @@
+name: Frontend CI
+
+# Instala dependencias, revisa el codigo (lint) y compila el frontend
+on:
+  pull_request:
+    paths:
+      - 'frontend-react/**'
+      - '.github/workflows/frontend-ci.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'frontend-react/**'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-react
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      # npm install (no npm ci) porque el package-lock se regenera en este PR
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Compilar
+        run: npm run build

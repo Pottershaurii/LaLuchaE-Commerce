@@ -1,4 +1,9 @@
-const API_URL = 'http://localhost:8080/api/auth'
+// Base de la API: se configura con VITE_API_URL (ver .env.example).
+// En local, si no existe, usa el backend en el puerto 8080.
+const API_BASE_URL =
+  import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+
+const API_URL = `${API_BASE_URL}/auth`
 
 /* ========================================
    FUNCIÓN AUXILIAR PARA LEER RESPUESTAS
@@ -46,7 +51,7 @@ export const registerClient = async (userData) => {
     return data
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No se pudo conectar con el servidor.')
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
     }
 
     throw error
@@ -80,7 +85,7 @@ export const verifyEmailToken = async (email, code) => {
     return data
   } catch (error) {
     if (error instanceof TypeError) {
-      throw new Error('No se pudo conectar con el servidor.')
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
     }
 
     throw error
@@ -89,32 +94,57 @@ export const verifyEmailToken = async (email, code) => {
 
 /* ========================================
    LOGIN
-   Temporal hasta conectar login al backend
+   Llama a POST /api/auth/login y guarda el token JWT
 ======================================== */
 export const loginUser = async (correo, password) => {
   if (!correo || !password) {
     throw new Error('Debes ingresar correo y contraseña.')
   }
 
-  const authenticatedUser = {
-    email: correo,
-    nombre: 'Usuario La Lucha'
-  }
+  try {
+    const response = await fetch(`${API_URL}/login`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: correo,
+        password
+      })
+    })
 
-  localStorage.setItem(
-    'lalucha_user',
-    JSON.stringify(authenticatedUser)
-  )
+    const data = await getResponseData(response)
 
-  localStorage.setItem(
-    'lalucha_authenticated',
-    'true'
-  )
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || 'No se pudo iniciar sesión.'
+      )
+    }
 
-  return {
-    success: true,
-    user: authenticatedUser,
-    message: 'Inicio de sesión correcto.'
+    const authenticatedUser = {
+      email: data.email,
+      nombre: data.nombre,
+      rol: data.rol
+    }
+
+    // api.js lee el token desde 'token' para enviarlo como Bearer
+    localStorage.setItem('token', data.token)
+
+    localStorage.setItem(
+      'lalucha_user',
+      JSON.stringify(authenticatedUser)
+    )
+
+    return {
+      ...data,
+      user: authenticatedUser
+    }
+  } catch (error) {
+    if (error instanceof TypeError) {
+      throw new Error('No se pudo conectar con el servidor.', { cause: error })
+    }
+
+    throw error
   }
 }
 
@@ -122,17 +152,37 @@ export const loginUser = async (correo, password) => {
    CERRAR SESIÓN
 ======================================== */
 export const logoutUser = () => {
+  localStorage.removeItem('token')
   localStorage.removeItem('lalucha_user')
   localStorage.removeItem('lalucha_authenticated')
 }
 
 /* ========================================
    COMPROBAR SESIÓN
+   Hay sesión si existe un token JWT que no haya vencido
 ======================================== */
 export const isAuthenticated = () => {
-  return (
-    localStorage.getItem('lalucha_authenticated') === 'true'
-  )
+  const token = localStorage.getItem('token')
+
+  if (!token) {
+    return false
+  }
+
+  try {
+    const payload = JSON.parse(
+      atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/'))
+    )
+
+    if (payload.exp && payload.exp * 1000 < Date.now()) {
+      logoutUser()
+      return false
+    }
+
+    return true
+  } catch {
+    logoutUser()
+    return false
+  }
 }
 
 /* ========================================
