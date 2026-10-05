@@ -11,6 +11,7 @@ import com.lalucha.backend.service.EmailService;
 import com.lalucha.backend.service.JwtService;
 import com.lalucha.backend.service.VerificationService;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -59,7 +60,7 @@ public class AuthController {
      * y le envia un codigo de verificacion que vence en 15 minutos.
      */
     @PostMapping("/register")
-    public ResponseEntity<Map<String, Object>> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<Map<String, Object>> register(@Valid @RequestBody RegisterRequest request) {
         if (esVacio(request.getEmail())) {
             return error("Debes ingresar un correo electrónico.");
         }
@@ -110,7 +111,7 @@ public class AuthController {
     }
 
     @PostMapping("/verify")
-    public ResponseEntity<Map<String, Object>> verify(@RequestBody VerifyRequest request) {
+    public ResponseEntity<Map<String, Object>> verify(@Valid @RequestBody VerifyRequest request) {
         if (esVacio(request.getEmail()) || esVacio(request.getCode())) {
             return error("Debes ingresar el correo y el código de verificación.");
         }
@@ -149,7 +150,7 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<Map<String, Object>> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<Map<String, Object>> login(@Valid @RequestBody LoginRequest request) {
         if (esVacio(request.getEmail()) || esVacio(request.getPassword())) {
             return error("Debes ingresar tu correo y contraseña.");
         }
