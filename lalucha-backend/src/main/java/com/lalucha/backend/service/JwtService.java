@@ -1,6 +1,7 @@
 package com.lalucha.backend.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -12,6 +13,7 @@ import java.security.Key;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class JwtService {
@@ -52,6 +54,18 @@ public class JwtService {
 
     public String extractRol(String token) {
         return (String) extractClaims(token).get("rol");
+    }
+
+    /**
+     * Valida firma y vencimiento del token. Devuelve los claims si es valido,
+     * o vacio si fue manipulado, esta vencido o mal formado.
+     */
+    public Optional<Claims> validarToken(String token) {
+        try {
+            return Optional.of(extractClaims(token));
+        } catch (JwtException | IllegalArgumentException e) {
+            return Optional.empty();
+        }
     }
 
     private Claims extractClaims(String token) {
