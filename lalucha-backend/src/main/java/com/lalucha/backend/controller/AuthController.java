@@ -26,7 +26,8 @@ import java.util.Optional;
 @CrossOrigin(origins = {
     "http://localhost:5173",
     "http://localhost:5174",
-    "http://localhost:5175"
+    "http://localhost:5175",
+    "https://lalucha-web-h5ang6bjavc0bjdg.chilecentral-01.azurewebsites.net"
 })
 public class AuthController {
 
