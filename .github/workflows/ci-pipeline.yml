@@ -1,0 +1,145 @@
+name: CI Pipeline
+
+# Integracion Continua de La Lucha E-commerce.
+# Se ejecuta en cada push y en cada pull request hacia main:
+#   - Backend : Java 17 + Maven Wrapper -> compilacion y pruebas contra PostgreSQL real
+#   - Frontend: Node 22 + Vite          -> revision de codigo (lint) y build de produccion
+# Si alguno falla, el PR no puede integrarse (regla de proteccion de main).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Si llega un nuevo commit al mismo PR, se cancela la ejecucion anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    name: Backend (Java 17 + Maven)
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: lalucha
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    # Valores solo para el entorno efimero de CI (no son credenciales reales)
+    env:
+      PGPASSWORD: postgres
+      SPRING_DATASOURCE_URL: jdbc:postgresql://localhost:5432/lalucha?currentSchema=lalucha
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      SPRING_JPA_HIBERNATE_DDL_AUTO: none
+      MAIL_USERNAME: ci@example.com
+      MAIL_PASSWORD: no-usado-en-ci
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Crear schema y datos semilla
+        run: |
+          psql -h localhost -U postgres -d lalucha -v ON_ERROR_STOP=1 -f database/schema.sql
+          psql -h localhost -U postgres -d lalucha -v ON_ERROR_STOP=1 -f database/seed.sql
+
+      - name: Configurar Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Build automatico (compilacion)
+        working-directory: lalucha-backend
+        run: |
+          chmod +x mvnw
+          ./mvnw -B clean compile
+
+      - name: Pruebas unitarias e integracion
+        working-directory: lalucha-backend
+        run: ./mvnw -B test
+
+      - name: Resumen de pruebas
+        if: always()
+        working-directory: lalucha-backend
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import glob, xml.etree.ElementTree as ET
+          filas, tot = [], {"tests": 0, "failures": 0, "errors": 0, "skipped": 0}
+          for f in sorted(glob.glob("target/surefire-reports/TEST-*.xml")):
+              s = ET.parse(f).getroot()
+              n = {k: int(s.get(k, 0)) for k in tot}
+              for k in tot:
+                  tot[k] += n[k]
+              ok = n["failures"] == 0 and n["errors"] == 0
+              nombre = s.get("name").split(".")[-1].replace("$", " > ")
+              filas.append(f"| {'✅' if ok else '❌'} | {nombre} | {n['tests']} | {n['failures']} | {n['errors']} | {n['skipped']} |")
+          estado = "✅ BUILD SUCCESS" if tot["failures"] == 0 and tot["errors"] == 0 and tot["tests"] > 0 else "❌ BUILD FAILURE"
+          print(f"## Backend: {estado}")
+          print(f"**{tot['tests']} pruebas** · {tot['failures']} fallidas · {tot['errors']} con error · {tot['skipped']} omitidas\n")
+          print("| | Clase de prueba | Pruebas | Fallidas | Errores | Omitidas |")
+          print("|---|---|---|---|---|---|")
+          print("\n".join(filas) if filas else "| ⚠️ | No se generaron reportes de pruebas | | | | |")
+          PY
+
+      - name: Guardar reportes de pruebas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reportes-pruebas-backend
+          path: lalucha-backend/target/surefire-reports/
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend (Node 22 + Vite)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-react
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Instalar dependencias
+        run: npm install --no-audit --no-fund
+
+      - name: Revision de codigo (lint)
+        run: npm run lint
+
+      - name: Build automatico (produccion)
+        run: npm run build
+
+      - name: Resumen del build
+        if: success()
+        run: |
+          {
+            echo "## Frontend: ✅ BUILD SUCCESS"
+            echo "Lint sin errores y build de produccion generado en \`dist/\`:"
+            echo '```'
+            du -sh dist
+            ls dist/assets
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
