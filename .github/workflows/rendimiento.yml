@@ -1,0 +1,140 @@
+name: Capacidad y Rendimiento
+
+# Plan de Capacidad (Semana 12). Reproduce el hardware de produccion y mide:
+#   1. Planes de ejecucion (EXPLAIN ANALYZE) de las 3 consultas criticas,
+#      antes y despues de database/indices-rendimiento.sql, con 3 anos de datos.
+#   2. Prueba de carga k6 "hora pico" contra el API con los limites del plan B1:
+#        API: 1 vCPU / 1.75 GB  (Azure App Service B1)
+#        BD : 1 vCPU / 2 GB / 50 conexiones  (Azure PostgreSQL Flexible B1ms)
+#   3. Uso de CPU, memoria y conexiones durante la carga.
+# No toca produccion. Corre a mano, en los PR que cambian estos archivos
+# y cada lunes (revision preventiva de capacidad).
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 11 * * 1'   # lunes 06:00 hora de Lima
+  pull_request:
+    branches: [main]
+    paths:
+      - 'performance/**'
+      - 'database/**'
+      - 'lalucha-backend/src/main/resources/application.properties'
+      - '.github/workflows/rendimiento.yml'
+
+concurrency:
+  group: rendimiento-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  capacidad:
+    name: Capacidad (EXPLAIN + k6)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Valores solo para este entorno efimero (no son credenciales reales)
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: lalucha
+      RESULTADOS: resultados
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Base de datos con limites de B1ms (1 vCPU, 2 GB, 50 conexiones)
+        run: |
+          mkdir -p "$RESULTADOS" && chmod 777 "$RESULTADOS"   # k6 escribe aqui con otro usuario
+          docker network create perf
+          docker run -d --name db --network perf --cpus 1 --memory 2g \
+            -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=lalucha -p 5432:5432 \
+            postgres:16 -c max_connections=50
+          for i in $(seq 1 30); do docker exec db pg_isready -U postgres && break; sleep 2; done
+
+      - name: Cargar schema, seed y 3 anos de datos
+        run: |
+          psql -v ON_ERROR_STOP=1 -q -f database/schema.sql
+          psql -v ON_ERROR_STOP=1 -q -f database/seed.sql
+          time psql -v ON_ERROR_STOP=1 -q -f performance/datos-volumen.sql
+          psql -At -c "SELECT 'usuarios', count(*) FROM lalucha.usuarios UNION ALL SELECT 'pedidos', count(*) FROM lalucha.pedidos UNION ALL SELECT 'pedido_detalle', count(*) FROM lalucha.pedido_detalle UNION ALL SELECT 'tamano_mb', pg_database_size('lalucha')/1024/1024" | tee "$RESULTADOS/volumen.txt"
+
+      - name: EXPLAIN de las consultas criticas (antes de los indices)
+        run: psql -f performance/consultas-criticas.sql > "$RESULTADOS/explain-antes.txt" 2>&1 && cat "$RESULTADOS/explain-antes.txt"
+
+      - name: Aplicar indices de rendimiento (RFC-05)
+        run: psql -v ON_ERROR_STOP=1 -f database/indices-rendimiento.sql
+
+      - name: EXPLAIN de las consultas criticas (despues de los indices)
+        run: |
+          psql -f performance/consultas-criticas.sql > "$RESULTADOS/explain-despues.txt" 2>&1 && cat "$RESULTADOS/explain-despues.txt"
+          psql -At -F ' | ' -c "SELECT indexrelname, pg_size_pretty(pg_relation_size(indexrelid)) FROM pg_stat_user_indexes WHERE schemaname = 'lalucha' AND indexrelname LIKE 'ix_%' ORDER BY 1" > "$RESULTADOS/indices.txt"
+
+      - name: Construir la imagen del API (mismo Dockerfile que produccion)
+        run: docker build -t lalucha-api:rendimiento lalucha-backend
+
+      - name: Levantar el API con limites de App Service B1 (1 vCPU, 1.75 GB)
+        run: |
+          docker run -d --name api --network perf --cpus 1 --memory 1792m -p 8080:8080 \
+            -e SPRING_DATASOURCE_URL='jdbc:postgresql://db:5432/lalucha?currentSchema=lalucha' \
+            -e DB_USERNAME=postgres -e DB_PASSWORD=postgres \
+            -e JWT_SECRET=clave-solo-para-prueba-de-capacidad-lalucha-2026 \
+            -e MAIL_USERNAME=ci@example.com -e MAIL_PASSWORD=no-usado \
+            lalucha-api:rendimiento
+          for i in $(seq 1 60); do
+            curl -sf http://localhost:8080/api/health && { echo; echo "API listo en $((i*2)) s" | tee "$RESULTADOS/arranque.txt"; exit 0; }
+            sleep 2
+          done
+          docker logs api; exit 1
+
+      - name: Endpoint sin paginacion (listado de usuarios para ADMIN)
+        run: |
+          TOKEN=$(curl -s -X POST http://localhost:8080/api/auth/login -H 'Content-Type: application/json' \
+            --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}' | jq -r .token)
+          for i in 1 2 3; do
+            curl -s -o /dev/null -H "Authorization: Bearer $TOKEN" \
+              -w '%{http_code} %{time_total} %{size_download}\n' http://localhost:8080/api/admin/usuarios
+          done | tee "$RESULTADOS/admin-usuarios.txt"
+
+      - name: Prueba de carga k6 (hora pico y el doble)
+        run: |
+          # Muestras de CPU, memoria y conexiones cada ~3 s mientras corre k6
+          (
+            echo "hora,contenedor,cpu,memoria,memoria_pct,conexiones_api"
+            while true; do
+              CONN=$(psql -At -c "SELECT count(*) FROM pg_stat_activity WHERE datname = 'lalucha' AND application_name LIKE 'PostgreSQL JDBC%'" 2>/dev/null || echo 0)
+              docker stats --no-stream --format "{{.Name}},{{.CPUPerc}},{{.MemUsage}},{{.MemPerc}}" api db \
+                | sed "s/^/$(date +%H:%M:%S),/; s/$/,$CONN/"
+              sleep 1
+            done
+          ) > "$RESULTADOS/recursos.csv" &
+          MONITOR=$!
+          set +e
+          docker run --rm --network host -v "$PWD/performance/k6:/scripts:ro" -v "$PWD/$RESULTADOS:/out" \
+            grafana/k6:0.57.0 run --quiet -e API_URL=http://localhost:8080 --summary-export /out/k6-resumen.json /scripts/hora-pico.js
+          echo $? > "$RESULTADOS/k6-codigo.txt"
+          kill $MONITOR
+          exit 0
+
+      - name: Resumen de capacidad
+        if: always()
+        run: python3 performance/resumen.py "$RESULTADOS" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Log del API
+        if: always()
+        run: docker logs api > "$RESULTADOS/api.log" 2>&1 || true
+
+      - name: Guardar resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-capacidad
+          path: resultados/
+
+      - name: Verificar umbrales de k6
+        run: |
+          CODIGO=$(cat "$RESULTADOS/k6-codigo.txt")
+          if [ "$CODIGO" != "0" ]; then echo "k6 reporto umbrales superados (codigo $CODIGO)"; exit 1; fi
+          echo "Todos los umbrales de k6 se cumplieron"
