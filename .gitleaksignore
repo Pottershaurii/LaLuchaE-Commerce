@@ -1,0 +1,8 @@
+# Secretos antiguos que quedaron en el historial (2026-09-28 a 2026-10-02).
+# Ya no estan en el codigo y se rotan segun RFC-07. Gitleaks los ignora;
+# cualquier secreto nuevo hace fallar el CI.
+# Formato: commit:archivo:regla:linea
+e5a30b31f5438113c2ee5062e227fea11386c77a:lalucha-backend/src/main/resources/application.properties:spring-secreto-literal:11
+e5a30b31f5438113c2ee5062e227fea11386c77a:lalucha-backend/src/main/resources/application.properties:spring-secreto-literal:38
+4164cc4666b07daf3ceae245e948a579dd98703f:lalucha-backend/src/main/java/com/lalucha/backend/service/JwtService.java:jwt-clave-en-codigo:18
+4164cc4666b07daf3ceae245e948a579dd98703f:lalucha-backend/src/main/resources/application.properties:spring-secreto-literal:9
