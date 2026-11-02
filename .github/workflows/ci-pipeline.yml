@@ -49,6 +49,7 @@ jobs:
       SPRING_JPA_HIBERNATE_DDL_AUTO: none
       MAIL_USERNAME: ci@example.com
       MAIL_PASSWORD: no-usado-en-ci
+      JWT_SECRET: clave-efimera-solo-para-ci-no-se-usa-en-produccion
 
     steps:
       - name: Descargar el codigo
@@ -99,13 +100,73 @@ jobs:
           print("\n".join(filas) if filas else "| ⚠️ | No se generaron reportes de pruebas | | | | |")
           PY
 
+      - name: Resumen de cobertura (JaCoCo)
+        if: always()
+        working-directory: lalucha-backend
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import csv, os
+          ruta = "target/site/jacoco/jacoco.csv"
+          if not os.path.exists(ruta):
+              print("\n> No se genero el reporte de cobertura.")
+              raise SystemExit
+          paquetes = {}
+          for f in csv.DictReader(open(ruta)):
+              p = paquetes.setdefault(f["PACKAGE"].split(".")[-1], [0, 0, 0, 0])
+              p[0] += int(f["LINE_COVERED"]); p[1] += int(f["LINE_MISSED"])
+              p[2] += int(f["BRANCH_COVERED"]); p[3] += int(f["BRANCH_MISSED"])
+          pct = lambda c, m: f"{100 * c / (c + m):.0f} %" if c + m else "-"
+          tl = [sum(v[i] for v in paquetes.values()) for i in range(4)]
+          print(f"\n## Cobertura de pruebas: {pct(tl[0], tl[1])} de lineas · {pct(tl[2], tl[3])} de ramas\n")
+          print("| Paquete | Lineas cubiertas | Cobertura de lineas | Cobertura de ramas |")
+          print("|---|---|---|---|")
+          for nombre, v in sorted(paquetes.items()):
+              print(f"| {nombre} | {v[0]} de {v[0] + v[1]} | {pct(v[0], v[1])} | {pct(v[2], v[3])} |")
+          PY
+
       - name: Guardar reportes de pruebas
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: reportes-pruebas-backend
-          path: lalucha-backend/target/surefire-reports/
+          path: |
+            lalucha-backend/target/surefire-reports/
+            lalucha-backend/target/site/jacoco/
           if-no-files-found: ignore
+
+  secretos:
+    name: Secretos (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el codigo con todo el historial
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Instalar Gitleaks
+        run: |
+          curl -sSfL https://github.com/gitleaks/gitleaks/releases/download/v8.21.2/gitleaks_8.21.2_linux_x64.tar.gz | tar xz gitleaks
+          ./gitleaks version
+
+      # Revisa TODO el historial. Los hallazgos antiguos ya retirados y en rotacion
+      # estan listados en .gitleaksignore; cualquier secreto nuevo hace fallar el job.
+      - name: Escanear secretos (Zero Hardcoding)
+        run: ./gitleaks git --config .gitleaks.toml --redact --report-format json --report-path gitleaks.json .
+
+      - name: Resumen del escaneo
+        if: always()
+        run: |
+          python3 - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json, os
+          nuevos = json.load(open("gitleaks.json")) if os.path.exists("gitleaks.json") else []
+          base = [l for l in open(".gitleaksignore") if l.strip() and not l.startswith("#")]
+          print("## Secretos: " + ("✅ sin secretos nuevos" if not nuevos else f"❌ {len(nuevos)} secreto(s) nuevo(s)"))
+          print(f"Historial revisado completo. Hallazgos antiguos ya retirados del codigo (.gitleaksignore): **{len(base)}**\n")
+          if nuevos:
+              print("| Regla | Archivo | Commit |\n|---|---|---|")
+              for x in nuevos:
+                  print(f"| {x['RuleID']} | {x['File']} | {x['Commit'][:8]} |")
+          PY
 
   frontend:
     name: Frontend (Node 22 + Vite)
