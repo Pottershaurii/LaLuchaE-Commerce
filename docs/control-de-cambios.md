@@ -16,7 +16,7 @@ gestion de cambios de ITIL 4 y el principio de segregacion de funciones (SoD).
 | `database/` | Esquema `schema.sql`, datos semilla `seed.sql` y guia de instalacion |
 | `docs/` | Documentacion del proceso (este archivo) |
 | `.github/workflows/` | Pipelines de integracion y despliegue continuo |
-| `.github/ISSUE_TEMPLATE/` | Plantilla de Solicitud de Cambio (RFC) |
+| `.github/ISSUE_TEMPLATE/` | Plantillas de Solicitud de Cambio (RFC), Solicitud de acceso y Solicitud de informacion |
 
 ## 2. Ramas y proteccion de `main`
 
@@ -25,7 +25,7 @@ gestion de cambios de ITIL 4 y el principio de segregacion de funciones (SoD).
   (`feature/...`, `fix/...`, `ci/...`) y entra por **pull request**.
 - Reglas de proteccion configuradas en GitHub:
   - Pull request obligatorio, con **1 aprobacion** de un integrante distinto al autor.
-  - El **CI Pipeline** debe terminar en verde (jobs *Backend* y *Frontend*).
+  - El **CI Pipeline** debe terminar en verde (jobs *Backend*, *Frontend* y *Secretos*).
   - Se bloquean el *force push* y el borrado de la rama.
 
 ## 3. Segregacion de funciones (SoD)
@@ -48,9 +48,14 @@ Se ejecuta en cada `push` y `pull_request` hacia `main`:
 1. **Backend (Java 17 + Maven):** levanta un PostgreSQL 16 temporal, carga `schema.sql` y `seed.sql`,
    compila con `./mvnw clean compile` y ejecuta las pruebas con `./mvnw test`
    (JUnit 5, Mockito y MockMvc, incluidas las pruebas de seguridad OWASP A01 y A03).
+   JaCoCo mide la cobertura de lineas y ramas por paquete.
 2. **Frontend (Node 22 + Vite):** instala dependencias, revisa el codigo con ESLint y genera el build de produccion.
+3. **Secretos (Gitleaks):** revisa todo el historial del repositorio con las reglas de `.gitleaks.toml`.
+   Los hallazgos antiguos ya retirados y en rotacion (RFC-07) estan en `.gitleaksignore`; cualquier secreto nuevo
+   hace fallar el pipeline y bloquea el merge (Zero Hardcoding).
 
-Cada ejecucion publica un resumen con el resultado de las pruebas en la pestana *Summary* de GitHub Actions.
+Cada ejecucion publica en la pestana *Summary* de GitHub Actions el resultado de las pruebas, la cobertura y el
+escaneo de secretos.
 
 El despliegue (`deploy-lalucha-api.yml`) **solo se dispara cuando el CI termina en verde sobre `main`**,
 y publica la imagen Docker etiquetada con el SHA del commit.
@@ -63,7 +68,7 @@ RFC (Issue) ─► rama + PR ─► CI Pipeline en verde ─► aprobacion de ot
                                Azure App Service ◄── Deploy (imagen :SHA) ◄── CI en verde sobre main
 ```
 
-## 6. Tipos de cambio (ITIL 4) aplicados al Sprint 5
+## 6. Tipos de cambio (ITIL 4) aplicados en los Sprints 5 y 6
 
 | RFC | Cambio | Tipo | Por que |
 |---|---|---|---|
@@ -71,6 +76,9 @@ RFC (Issue) ─► rama + PR ─► CI Pipeline en verde ─► aprobacion de ot
 | RFC-02 | Modulo de gestion de solicitudes de servicio (S5-HU-01 a S5-HU-03) | Normal | Agrega tablas al esquema y nuevos endpoints protegidos |
 | RFC-03 | Configurar `MAIL_USERNAME` y `MAIL_PASSWORD` en Azure | Estandar | Configuracion documentada, de bajo riesgo y repetible |
 | RFC-04 | Habilitar CORS para el origen de la tienda publicada (PR #48) | Emergencia | La tienda en produccion no podia registrar ni iniciar sesion |
+| RFC-05 | Indices de rendimiento y pool HikariCP (Plan de Capacidad, PR #54) | Normal | Cambia el esquema de la base de datos en produccion |
+| RFC-06 | Alertas de capacidad en Azure Monitor y health check | Estandar | Procedimiento documentado que no modifica codigo |
+| RFC-07 | Rotacion de credenciales expuestas en el historial (`JWT_SECRET` y BD) | Normal | Cierra todas las sesiones y la API no arranca si falta la variable |
 
 ## 7. Plan de reversion (Backout Plan) de la version APF3
 
