@@ -1,24 +1,57 @@
 name: Deploy lalucha-api
 
-# Despliega el backend en Azure al mergear a main cambios del backend,
-# o a mano desde Actions > Deploy lalucha-api > Run workflow.
+# Despliegue continuo del backend en Azure App Service.
+#  - Automatico: solo cuando el "CI Pipeline" termina en verde sobre main
+#    (no se publica codigo que no compila o que rompe las pruebas).
+#  - Cada imagen se etiqueta con el SHA corto del commit: cada version queda identificada.
+#  - Plan de reversion (Backout): Actions > Deploy lalucha-api > Run workflow,
+#    indicando en "image_tag" el SHA de la ultima version estable. Se despliega
+#    esa imagen ya publicada, sin recompilar.
 on:
+  workflow_run:
+    workflows: ["CI Pipeline"]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
-  push:
-    branches:
-      - main
-    paths:
-      - 'lalucha-backend/**'
-      - '.github/workflows/deploy-lalucha-api.yml'
+    inputs:
+      image_tag:
+        description: "Reversion: SHA corto (7 caracteres) de una imagen ya publicada. Vacio = construir y desplegar main"
+        required: false
+        default: ""
+
+concurrency:
+  group: deploy-lalucha-api
+  cancel-in-progress: false
 
 jobs:
   deploy:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
       packages: write
+    env:
+      IMAGEN: ghcr.io/pottershaurii/lalucha-api
+      TAG_REVERSION: ${{ github.event.inputs.image_tag }}
     steps:
-      - uses: actions/checkout@v4
+      - name: Descargar el codigo del commit validado por el CI
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+
+      - name: Definir la version a desplegar
+        id: version
+        run: |
+          if [ -n "$TAG_REVERSION" ]; then
+            if ! [[ "$TAG_REVERSION" =~ ^[0-9a-f]{7,40}$ ]]; then
+              echo "image_tag debe ser un SHA en hexadecimal (ej. 2c95097)"; exit 1
+            fi
+            echo "tag=$TAG_REVERSION" >> "$GITHUB_OUTPUT"
+            echo "reversion=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=$(git rev-parse --short=7 HEAD)" >> "$GITHUB_OUTPUT"
+            echo "reversion=false" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: Login en GHCR
         uses: docker/login-action@v3
@@ -27,14 +60,37 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Construir y publicar imagen
+      - name: Construir y publicar imagen (version + latest)
+        if: steps.version.outputs.reversion == 'false'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
         run: |
-          docker build -t ghcr.io/pottershaurii/lalucha-api:latest ./lalucha-backend
-          docker push ghcr.io/pottershaurii/lalucha-api:latest
+          docker build -t "$IMAGEN:$TAG" -t "$IMAGEN:latest" ./lalucha-backend
+          docker push "$IMAGEN:$TAG"
+          docker push "$IMAGEN:latest"
+
+      - name: Verificar que la imagen de reversion exista
+        if: steps.version.outputs.reversion == 'true'
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+        run: docker manifest inspect "$IMAGEN:$TAG" > /dev/null
 
       - name: Desplegar en Azure
         uses: azure/webapps-deploy@v3
         with:
           app-name: lalucha-api
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          images: ghcr.io/pottershaurii/lalucha-api:latest
+          images: ${{ env.IMAGEN }}:${{ steps.version.outputs.tag }}
+
+      - name: Resumen del despliegue
+        env:
+          TAG: ${{ steps.version.outputs.tag }}
+          REVERSION: ${{ steps.version.outputs.reversion }}
+          COMMIT: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          {
+            echo "## Despliegue de lalucha-api"
+            echo "- Imagen: \`$IMAGEN:$TAG\`"
+            if [ "$REVERSION" = "true" ]; then echo "- Tipo: **REVERSION (Backout Plan)**"; else echo "- Tipo: despliegue normal desde main"; fi
+            echo "- Commit: \`$COMMIT\`"
+          } >> "$GITHUB_STEP_SUMMARY"
