@@ -19,6 +19,8 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.List;
 
+import org.springframework.http.HttpMethod;
+
 import java.io.IOException;
 
 /**
@@ -70,6 +72,8 @@ public class SecurityConfig {
                 // Rutas publicas
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
                 // Rutas por rol
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/cliente/**").hasAnyRole("CLIENTE", "ADMIN")
