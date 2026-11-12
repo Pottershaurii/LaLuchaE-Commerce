@@ -1,0 +1,53 @@
+name: "Solicitud de informacion"
+description: "Consultar un dato del servicio (configuracion, planes, metricas, estado). No modifica nada; no requiere aprobacion."
+title: "[REQ-INFO] "
+labels: ["solicitud", "solicitud: informacion"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Solicitud estandar y preaprobada: no cambia accesos ni configuracion, solo pide informacion.
+        Tiempo de primera respuesta: 4 horas laborables. Resolucion: 16 horas laborables.
+
+  - type: dropdown
+    id: servicio
+    attributes:
+      label: Servicio del catalogo
+      options:
+        - "REQ-INFO-01 · Consulta de un cliente (pedido, producto, horario)"
+        - "REQ-INFO-02 · Consulta tecnica interna (infraestructura, configuracion, metricas)"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: categoria
+    attributes:
+      label: Categoria
+      options:
+        - Infraestructura y planes de Azure
+        - Variables de entorno y configuracion (sin valores secretos)
+        - Metricas, costos o capacidad
+        - Estado de un pedido o producto
+        - Otra
+    validations:
+      required: true
+
+  - type: textarea
+    id: consulta
+    attributes:
+      label: Consulta
+      description: Que informacion necesitas, con el mayor detalle posible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: uso
+    attributes:
+      label: Para que se usara
+      description: Entregable, historia de usuario o decision que depende de la respuesta.
+
+  - type: input
+    id: fecha
+    attributes:
+      label: Fecha limite
+      placeholder: "ej. 06/11/2026"

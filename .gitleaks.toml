@@ -1,0 +1,35 @@
+# Configuracion de Gitleaks (escaneo de secretos) - Zero Hardcoding
+# Usa las reglas por defecto y agrega dos reglas propias del proyecto.
+title = "La Lucha E-commerce"
+
+[extend]
+useDefault = true
+
+# Contrasenas o claves escritas en literal en application.properties/.yml,
+# incluido un valor por defecto del tipo ${VARIABLE:valor}.
+# Solo se permite la referencia a la variable de entorno: ${VARIABLE}
+[[rules]]
+id = "spring-secreto-literal"
+description = "Secreto escrito en literal en la configuracion de Spring"
+regex = '''(?im)^\s*[\w.\-]*(password|secret|clave)[\w.\-]*\s*[=:]\s*(?:\$\{\w+:)?([^\s$#{}][^\s#{}]{3,})'''
+secretGroup = 2
+path = '''(?i)\.(properties|ya?ml)$'''
+keywords = ["password", "secret", "clave"]
+
+# Clave JWT escrita en el codigo Java (directa o en una constante)
+[[rules]]
+id = "jwt-clave-en-codigo"
+description = "Clave de firma JWT escrita en el codigo"
+regex = '''(?i)(hmacShaKeyFor\(\s*|(secret|key)\w*\s*=\s*)"([^"]{16,})"'''
+secretGroup = 3
+path = '''\.java$'''
+keywords = ["hmacshakeyfor", "secret", "key"]
+
+[allowlist]
+description = "Valores de ejemplo y de entornos efimeros de CI"
+paths = [
+  '''(^|/)\.env\.example$''',
+  '''(^|/)\.github/workflows/''',
+  '''(^|/)src/test/''',
+  '''(^|/)performance/''',
+]

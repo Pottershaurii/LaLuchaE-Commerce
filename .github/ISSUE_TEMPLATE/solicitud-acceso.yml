@@ -1,0 +1,79 @@
+name: "Solicitud de acceso"
+description: "Pedir un acceso o un recurso (rol en el panel, repositorio, Azure). Requiere aprobacion de un responsable distinto al solicitante."
+title: "[REQ-ACC] "
+labels: ["solicitud", "solicitud: acceso"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Usa este formulario para pedir un acceso o un recurso. La solicitud sigue el ciclo
+        **Registro > Validacion > Aprobacion > Ejecucion > Cierre** (ver `docs/gestion-de-solicitudes.md`).
+        Se aplica el principio de **menor privilegio**: pide solo el nivel que necesitas y por el tiempo que lo necesitas.
+        **Nunca** escribas contrasenas, claves ni tokens en este formulario.
+
+  - type: dropdown
+    id: servicio
+    attributes:
+      label: Servicio del catalogo
+      options:
+        - "REQ-ACC-01 · Rol de personal (STAFF / ADMIN) en el panel de la tienda"
+        - "REQ-ACC-02 · Alta de producto o combo en el catalogo"
+        - "REQ-ACC-03 · Acceso a infraestructura del equipo (Azure, GitHub, GHCR)"
+    validations:
+      required: true
+
+  - type: input
+    id: recurso
+    attributes:
+      label: Recurso
+      description: Que recurso exacto necesitas (cuenta, grupo de recursos, repositorio, rol).
+      placeholder: "ej. grupo de recursos rg-lalucha-dev en Azure"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: nivel
+    attributes:
+      label: Nivel de acceso solicitado
+      options:
+        - Solo lectura
+        - Colaborador (puede modificar)
+        - Administrador
+    validations:
+      required: true
+
+  - type: textarea
+    id: justificacion
+    attributes:
+      label: Justificacion
+      description: Para que necesitas el acceso y que tarea queda bloqueada sin el.
+    validations:
+      required: true
+
+  - type: input
+    id: vigencia
+    attributes:
+      label: Vigencia
+      description: Desde y hasta cuando. Los accesos sin fecha de fin se revisan al cierre de cada sprint.
+      placeholder: "ej. 03/11/2026 al 30/11/2026"
+    validations:
+      required: true
+
+  - type: input
+    id: aprobador
+    attributes:
+      label: Aprobador
+      description: Responsable del recurso (Data Owner). No puede ser el mismo solicitante.
+      placeholder: "usuario de GitHub del aprobador"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: compromisos
+    attributes:
+      label: Compromisos
+      options:
+        - label: Pido el menor nivel de acceso que me permite hacer la tarea.
+          required: true
+        - label: No compartire credenciales ni las escribire en el repositorio (Zero Hardcoding).
+          required: true

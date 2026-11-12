@@ -1,0 +1,101 @@
+name: "RFC - Solicitud de Cambio"
+description: "Registrar un cambio al sistema (codigo, base de datos, infraestructura o configuracion) segun ITIL 4."
+title: "[RFC] "
+labels: ["RFC"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Completa esta solicitud **antes** de abrir el pull request del cambio.
+        Tipos de cambio (ITIL 4):
+        - **Estandar:** bajo riesgo, repetible y preaprobado (ej. ajustar una variable de entorno documentada).
+        - **Normal:** requiere evaluacion y aprobacion del Product Owner antes de implementarse (ej. nuevo modulo, cambio de esquema).
+        - **Emergencia:** corrige una falla que afecta produccion; se aprueba de forma expedita y se documenta despues.
+
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Tipo de cambio
+      options:
+        - Estandar
+        - Normal
+        - Emergencia
+    validations:
+      required: true
+
+  - type: textarea
+    id: descripcion
+    attributes:
+      label: Descripcion del cambio
+      description: Que se va a cambiar, en terminos concretos.
+    validations:
+      required: true
+
+  - type: textarea
+    id: justificacion
+    attributes:
+      label: Justificacion
+      description: Por que es necesario y que pasa si no se hace.
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: componentes
+    attributes:
+      label: Componentes afectados
+      options:
+        - label: Backend (Spring Boot / lalucha-api)
+        - label: Frontend (React / lalucha-web)
+        - label: Base de datos (PostgreSQL / esquema lalucha)
+        - label: Infraestructura Azure o variables de entorno
+        - label: Pipeline CI/CD (GitHub Actions)
+
+  - type: dropdown
+    id: riesgo
+    attributes:
+      label: Nivel de riesgo
+      options:
+        - Bajo
+        - Medio
+        - Alto
+    validations:
+      required: true
+
+  - type: textarea
+    id: implementacion
+    attributes:
+      label: Plan de implementacion
+      description: Pasos, rama y pull request asociados.
+    validations:
+      required: true
+
+  - type: textarea
+    id: pruebas
+    attributes:
+      label: Plan de pruebas
+      description: Pruebas automaticas (CI) y verificaciones manuales que confirman el cambio.
+    validations:
+      required: true
+
+  - type: textarea
+    id: reversion
+    attributes:
+      label: Plan de reversion (Backout Plan)
+      description: Como volver al estado anterior si el cambio falla en produccion.
+    validations:
+      required: true
+
+  - type: input
+    id: aprobador
+    attributes:
+      label: Aprobador
+      description: Product Owner (cambio Normal) o Scrum Master / PO de forma expedita (Emergencia). No puede ser quien implementa.
+      placeholder: "@usuario"
+    validations:
+      required: true
+
+  - type: input
+    id: ventana
+    attributes:
+      label: Ventana de implementacion
+      placeholder: "ej. 25/10/2026 20:00 - 21:00 (fuera del horario de atencion)"
