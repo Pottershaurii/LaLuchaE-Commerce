@@ -31,7 +31,13 @@ GRANT ALL PRIVILEGES ON DATABASE lalucha TO lalucha_app;
 ```bash
 psql -U lalucha_app -d lalucha -f schema.sql
 psql -U lalucha_app -d lalucha -f seed.sql
+psql -U lalucha_app -d lalucha -f indices-rendimiento.sql
 ```
+
+`indices-rendimiento.sql` (RFC-05) agrega los índices de las llaves foráneas y de las consultas
+críticas. Es idempotente y usa `CREATE INDEX CONCURRENTLY`, así que también se puede aplicar sobre
+la base de Azure sin detener la tienda. Para revertirlo: `indices-rendimiento-revertir.sql`.
+El análisis de capacidad completo está en `performance/README.md`.
 
 4. Verificación (evidencia):
 
