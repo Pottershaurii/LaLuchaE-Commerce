@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { Button, Col, Container, Row } from 'react-bootstrap'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AdminLayout from './pages/AdminLayout.jsx'
 
 import {
   LuSandwich,
@@ -74,212 +76,237 @@ function App() {
     setAuthView('login')
   }
 
+  function RutaAdmin({ children }) {
+    const token = localStorage.getItem('token')
+    if (!token) return <Navigate to="/" replace />
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      const rol = payload.rol || payload.role
+      if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
+    } catch {
+      return <Navigate to="/" replace />
+    }
+    return children
+  }
+
   return (
-    <>
-      {/* ================= NAVBAR ================= */}
+    <Routes>
+      <Route path="/admin" element={
+        <RutaAdmin>
+          <AdminLayout />
+        </RutaAdmin>
+      } />
+      <Route path="/*" element={
+        <>
+        
+          {/* ================= NAVBAR ================= */}
 
-      <Navbar onOpenAuth={handleOpenAuth} />
+          <Navbar onOpenAuth={handleOpenAuth} />
 
-      <main>
-        {/* ================= HERO ================= */}
+          <main>
+            {/* ================= HERO ================= */}
 
-        <section id="inicio" className="hero-section">
-          <Container>
-            <Row className="align-items-center g-5">
-              <Col xs={12} lg={6}>
-                <span className="hero-badge">
-                  ESPECIALIDAD LA LUCHA
-                </span>
+            <section id="inicio" className="hero-section">
+              <Container>
+                <Row className="align-items-center g-5">
+                  <Col xs={12} lg={6}>
+                    <span className="hero-badge">
+                      ESPECIALIDAD LA LUCHA
+                    </span>
 
-                <h1 className="hero-title">
-                  SÁNGUCHES
-                  <br />
-                  CRIOLLOS
-                </h1>
+                    <h1 className="hero-title">
+                      SÁNGUCHES
+                      <br />
+                      CRIOLLOS
+                    </h1>
 
-                <h2 className="hero-script">
-                  Hechos como en casa
-                </h2>
+                    <h2 className="hero-script">
+                      Hechos como en casa
+                    </h2>
 
-                <p className="hero-description">
-                  Tradición criolla horneada diariamente, carnes jugosas
-                  seleccionadas y la infaltable sarza criolla.
-                </p>
+                    <p className="hero-description">
+                      Tradición criolla horneada diariamente, carnes jugosas
+                      seleccionadas y la infaltable sarza criolla.
+                    </p>
 
-                <div className="d-flex flex-wrap gap-3">
-                  <Button
+                    <div className="d-flex flex-wrap gap-3">
+                      <Button
+                        href="#catalogo"
+                        className="btn-hero-primary"
+                      >
+                        Ver menú
+                      </Button>
+
+                      <Button
+                        href="#promociones"
+                        className="btn-hero-secondary"
+                      >
+                        Promociones del día
+                      </Button>
+                    </div>
+                  </Col>
+
+                  <Col xs={12} lg={6}>
+                    <div className="hero-image-container">
+                      <img
+                        src={heroImg}
+                        alt="Sánguche criollo La Lucha"
+                        className="hero-image"
+                      />
+
+                      <button
+                        type="button"
+                        className="hero-arrow hero-arrow-left"
+                        aria-label="Imagen anterior"
+                      >
+                        ‹
+                      </button>
+
+                      <button
+                        type="button"
+                        className="hero-arrow hero-arrow-right"
+                        aria-label="Imagen siguiente"
+                      >
+                        ›
+                      </button>
+                    </div>
+
+                    <div className="hero-dots">
+                      <span className="hero-dot active"></span>
+                      <span className="hero-dot"></span>
+                      <span className="hero-dot"></span>
+                    </div>
+                  </Col>
+                </Row>
+              </Container>
+            </section>
+
+            {/* ================= CATEGORÍAS ================= */}
+
+            <section className="categorias-section">
+              <Container>
+                <div className="categorias-header">
+                  <h2>Categorías</h2>
+
+                  <a href="#catalogo">
+                    Ver todas
+                  </a>
+                </div>
+
+                <div className="categorias-list">
+                  <a
                     href="#catalogo"
-                    className="btn-hero-primary"
+                    className="categoria-item active"
                   >
-                    Ver menú
-                  </Button>
+                    <div className="categoria-icon">
+                      <LuSandwich />
+                    </div>
 
-                  <Button
-                    href="#promociones"
-                    className="btn-hero-secondary"
+                    <span>Sánguches</span>
+                  </a>
+
+                  <a
+                    href="#catalogo"
+                    className="categoria-item"
                   >
-                    Promociones del día
-                  </Button>
-                </div>
-              </Col>
+                    <div className="categoria-icon">
+                      <LuUtensils />
+                    </div>
 
-              <Col xs={12} lg={6}>
-                <div className="hero-image-container">
-                  <img
-                    src={heroImg}
-                    alt="Sánguche criollo La Lucha"
-                    className="hero-image"
-                  />
+                    <span>Combos</span>
+                  </a>
 
-                  <button
-                    type="button"
-                    className="hero-arrow hero-arrow-left"
-                    aria-label="Imagen anterior"
+                  <a
+                    href="#catalogo"
+                    className="categoria-item"
                   >
-                    ‹
-                  </button>
+                    <div className="categoria-icon">
+                      <LuCupSoda />
+                    </div>
 
-                  <button
-                    type="button"
-                    className="hero-arrow hero-arrow-right"
-                    aria-label="Imagen siguiente"
+                    <span>Bebidas</span>
+                  </a>
+
+                  <a
+                    href="#catalogo"
+                    className="categoria-item"
                   >
-                    ›
-                  </button>
+                    <div className="categoria-icon">
+                      <PiDrop />
+                    </div>
+
+                    <span>Extras</span>
+                  </a>
+
+                  <a
+                    href="#catalogo"
+                    className="categoria-item"
+                  >
+                    <div className="categoria-icon">
+                      <LuIceCreamCone />
+                    </div>
+
+                    <span>Postres</span>
+                  </a>
                 </div>
+              </Container>
+            </section>
 
-                <div className="hero-dots">
-                  <span className="hero-dot active"></span>
-                  <span className="hero-dot"></span>
-                  <span className="hero-dot"></span>
-                </div>
-              </Col>
-            </Row>
-          </Container>
-        </section>
+            {/* ================= CATÁLOGO ================= */}
 
-        {/* ================= CATEGORÍAS ================= */}
+            <section id="catalogo">
+              <Catalogo />
+            </section>
+          </main>
 
-        <section className="categorias-section">
-          <Container>
-            <div className="categorias-header">
-              <h2>Categorías</h2>
+          {/* ================= LOGIN ================= */}
 
-              <a href="#catalogo">
-                Ver todas
-              </a>
-            </div>
-
-            <div className="categorias-list">
-              <a
-                href="#catalogo"
-                className="categoria-item active"
-              >
-                <div className="categoria-icon">
-                  <LuSandwich />
-                </div>
-
-                <span>Sánguches</span>
-              </a>
-
-              <a
-                href="#catalogo"
-                className="categoria-item"
-              >
-                <div className="categoria-icon">
-                  <LuUtensils />
-                </div>
-
-                <span>Combos</span>
-              </a>
-
-              <a
-                href="#catalogo"
-                className="categoria-item"
-              >
-                <div className="categoria-icon">
-                  <LuCupSoda />
-                </div>
-
-                <span>Bebidas</span>
-              </a>
-
-              <a
-                href="#catalogo"
-                className="categoria-item"
-              >
-                <div className="categoria-icon">
-                  <PiDrop />
-                </div>
-
-                <span>Extras</span>
-              </a>
-
-              <a
-                href="#catalogo"
-                className="categoria-item"
-              >
-                <div className="categoria-icon">
-                  <LuIceCreamCone />
-                </div>
-
-                <span>Postres</span>
-              </a>
-            </div>
-          </Container>
-        </section>
-
-        {/* ================= CATÁLOGO ================= */}
-
-        <section id="catalogo">
-          <Catalogo />
-        </section>
-      </main>
-
-      {/* ================= LOGIN ================= */}
-
-      {authView === 'login' && (
-        <Login
-          onClose={handleCloseAuth}
-          onRegister={handleOpenRegister}
-        />
-      )}
-
-      {/* ================= REGISTRO ================= */}
-
-      {authView === 'register' && (
-        <div className="auth-overlay">
-          <RegisterForm
-            onSuccess={handleRegisterSuccess}
-            onClose={handleCloseAuth}
-            onLogin={handleOpenLogin}
-          />
-        </div>
-      )}
-
-      {/* ================= VERIFICACIÓN ================= */}
-
-      {authView === 'verify' && registeredEmail && (
-        <div className="auth-overlay">
-          <div className="auth-verification-modal">
-            <button
-              type="button"
-              className="auth-close-button"
-              onClick={handleCloseAuth}
-              aria-label="Cerrar verificación"
-            >
-              ×
-            </button>
-
-            <EmailVerificationNotice
-              email={registeredEmail}
-              onVerified={handleVerificationSuccess}
+          {authView === 'login' && (
+            <Login
+              onClose={handleCloseAuth}
+              onRegister={handleOpenRegister}
             />
-          </div>
-        </div>
-      )}
-    </>
+          )}
+
+          {/* ================= REGISTRO ================= */}
+
+          {authView === 'register' && (
+            <div className="auth-overlay">
+              <RegisterForm
+                onSuccess={handleRegisterSuccess}
+                onClose={handleCloseAuth}
+                onLogin={handleOpenLogin}
+              />
+            </div>
+          )}
+
+          {/* ================= VERIFICACIÓN ================= */}
+
+          {authView === 'verify' && registeredEmail && (
+            <div className="auth-overlay">
+              <div className="auth-verification-modal">
+                <button
+                  type="button"
+                  className="auth-close-button"
+                  onClick={handleCloseAuth}
+                  aria-label="Cerrar verificación"
+                >
+                  ×
+                </button>
+
+                <EmailVerificationNotice
+                  email={registeredEmail}
+                  onVerified={handleVerificationSuccess}
+                />
+              </div>
+            </div>
+          )}
+        </>
+      
+      } />
+    </Routes>
   )
+
 }
 
 export default App

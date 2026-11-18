@@ -73,11 +73,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                
                 // Rutas por rol
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/cliente/**").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers("/api/checkout/**").hasAnyRole("CLIENTE", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/productos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
+
                 // Todo lo demas: denegado salvo usuario autenticado
                 .anyRequest().authenticated()
             )
