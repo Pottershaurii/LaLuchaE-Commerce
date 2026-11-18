@@ -9,6 +9,13 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Panel de productos (HU-10).
+ * - GET    /api/productos        catalogo publico (solo productos activos)
+ * - POST   /api/productos        crear (ADMIN)
+ * - PUT    /api/productos/{id}   editar (ADMIN)
+ * - DELETE /api/productos/{id}   desactivar, no borra el registro (ADMIN)
+ */
 @RestController
 @RequestMapping("/api/productos")
 public class ProductoController {
@@ -27,15 +34,13 @@ public class ProductoController {
     @PostMapping
     public ResponseEntity<?> crear(@RequestBody Map<String, Object> body) {
         try {
-            String nombre = (String) body.get("nombre");
-            String descripcion = (String) body.get("descripcion");
-            BigDecimal precio = new BigDecimal(body.get("precio").toString());
-            String imagenUrl = (String) body.get("imagenUrl");
-            Long categoriaId = Long.valueOf(body.get("categoriaId").toString());
-            Integer stockMinimo = body.get("stockMinimo") != null
-                    ? Integer.valueOf(body.get("stockMinimo").toString()) : null;
-
-            Producto creado = service.crear(nombre, descripcion, precio, imagenUrl, categoriaId, stockMinimo);
+            Producto creado = service.crear(
+                    texto(body, "nombre"),
+                    texto(body, "descripcion"),
+                    decimal(body, "precio"),
+                    texto(body, "imagenUrl"),
+                    entero(body, "categoriaId"),
+                    entero(body, "stockMinimo") == null ? null : entero(body, "stockMinimo").intValue());
             return ResponseEntity.ok(creado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -45,15 +50,15 @@ public class ProductoController {
     @PutMapping("/{id}")
     public ResponseEntity<?> actualizar(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         try {
-            String nombre = (String) body.get("nombre");
-            String descripcion = (String) body.get("descripcion");
-            BigDecimal precio = body.get("precio") != null ? new BigDecimal(body.get("precio").toString()) : null;
-            String imagenUrl = (String) body.get("imagenUrl");
-            Long categoriaId = body.get("categoriaId") != null ? Long.valueOf(body.get("categoriaId").toString()) : null;
-            Integer stockMinimo = body.get("stockMinimo") != null ? Integer.valueOf(body.get("stockMinimo").toString()) : null;
-            Boolean activo = body.get("activo") != null ? Boolean.valueOf(body.get("activo").toString()) : null;
-
-            Producto actualizado = service.actualizar(id, nombre, descripcion, precio, imagenUrl, categoriaId, stockMinimo, activo);
+            Object activo = body.get("activo");
+            Producto actualizado = service.actualizar(id,
+                    texto(body, "nombre"),
+                    texto(body, "descripcion"),
+                    decimal(body, "precio"),
+                    texto(body, "imagenUrl"),
+                    entero(body, "categoriaId"),
+                    entero(body, "stockMinimo") == null ? null : entero(body, "stockMinimo").intValue(),
+                    activo == null ? null : Boolean.valueOf(activo.toString()));
             return ResponseEntity.ok(actualizado);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -67,6 +72,34 @@ public class ProductoController {
             return ResponseEntity.ok(Map.of("mensaje", "Producto desactivado"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
+    // Lectura tolerante del JSON: un campo vacio cuenta como ausente y un numero mal escrito
+    // termina en 400 (NumberFormatException es una IllegalArgumentException), no en 500.
+
+    private static String texto(Map<String, Object> body, String campo) {
+        Object valor = body.get(campo);
+        return valor == null ? null : valor.toString();
+    }
+
+    private static BigDecimal decimal(Map<String, Object> body, String campo) {
+        String valor = texto(body, campo);
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return new BigDecimal(valor.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El campo " + campo + " debe ser un número.");
+        }
+    }
+
+    private static Long entero(Map<String, Object> body, String campo) {
+        String valor = texto(body, campo);
+        if (valor == null || valor.isBlank()) return null;
+        try {
+            return Long.valueOf(valor.trim());
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("El campo " + campo + " debe ser un número entero.");
         }
     }
 }
