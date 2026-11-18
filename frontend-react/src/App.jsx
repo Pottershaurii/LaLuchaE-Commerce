@@ -21,24 +21,24 @@ import Incidentes from './pages/Incidentes.jsx'
 
 import heroImg from './assets/images/hero-sanguche.jpg'
 
-function RutaAdmin({ children }) {
+// Lee el rol del JWT guardado (viene en base64url) y descarta sesiones vencidas.
+// Va fuera del componente: Date.now() no puede llamarse durante el render (react-hooks/purity).
+function esSesionAdmin() {
   const token = localStorage.getItem('token')
-  if (!token) return <Navigate to="/" replace />
-
-  let payload
+  if (!token) return false
   try {
-    // El JWT viene en base64url: se pasa a base64 normal antes de decodificar
     const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
-    payload = JSON.parse(atob(base64))
+    const payload = JSON.parse(atob(base64))
+    if (payload.exp && payload.exp * 1000 < Date.now()) return false
+    const rol = payload.rol || payload.role
+    return rol === 'ADMIN' || rol === 'ROLE_ADMIN'
   } catch {
-    return <Navigate to="/" replace />
+    return false
   }
+}
 
-  // Sesión vencida: el backend rechazaría todas las llamadas del panel
-  if (payload.exp && payload.exp * 1000 < Date.now()) return <Navigate to="/" replace />
-
-  const rol = payload.rol || payload.role
-  if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
+function RutaAdmin({ children }) {
+  if (!esSesionAdmin()) return <Navigate to="/" replace />
   return children
 }
 
