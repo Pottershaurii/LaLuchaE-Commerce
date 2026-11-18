@@ -28,6 +28,7 @@ import java.io.IOException;
  * - Sesion sin estado: cada peticion se autentica con el JWT del login.
  * - Denegar por defecto: todo lo que no es publico exige token valido.
  * - Reglas por rol: /api/admin/** solo ADMIN; /api/cliente/** y /api/checkout/** CLIENTE o ADMIN.
+ * - Incidentes: reportar requiere sesion; cambiar estado o reasignar, STAFF o ADMIN.
  * - Respuestas 401 (sin token / token invalido) y 403 (rol sin permiso) en JSON.
  */
 @Configuration
@@ -78,6 +79,8 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/cliente/**").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers("/api/checkout/**").hasAnyRole("CLIENTE", "ADMIN")
+                // Incidentes: cualquier usuario autenticado reporta; solo el personal cambia estado o asignacion
+                .requestMatchers(HttpMethod.PATCH, "/api/incidentes/**").hasAnyRole("STAFF", "ADMIN")
                 // Todo lo demas: denegado salvo usuario autenticado
                 .anyRequest().authenticated()
             )

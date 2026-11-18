@@ -15,6 +15,7 @@ import Login from './pages/Login.jsx'
 import RegisterForm from './components/Auth/RegisterForm.jsx'
 import EmailVerificationNotice from './components/Auth/EmailVerificationNotice.jsx'
 import Catalogo from './pages/Catalogo.jsx'
+import Incidentes from './pages/Incidentes.jsx'
 
 import heroImg from './assets/images/hero-sanguche.jpg'
 
@@ -233,6 +234,12 @@ function App() {
 
         <section id="catalogo">
           <Catalogo />
+        </section>
+
+        {/* ================= SOPORTE: INCIDENTES ================= */}
+
+        <section id="soporte">
+          <Incidentes onLogin={handleOpenAuth} />
         </section>
       </main>
 

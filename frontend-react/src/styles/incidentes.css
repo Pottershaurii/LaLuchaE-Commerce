@@ -1,0 +1,48 @@
+/* Módulo de gestión de incidentes (sección #soporte) */
+
+.incidentes-section {
+  background: var(--color-background);
+  color: var(--color-text);
+  padding: 4rem 0;
+}
+
+.incidentes-encabezado {
+  margin-bottom: 2rem;
+}
+
+.incidentes-encabezado h2 {
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.incidentes-encabezado p {
+  margin-bottom: 1rem;
+  max-width: 720px;
+}
+
+.incidentes-card {
+  background: var(--color-light);
+  border: 1px solid #e3d7c3;
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.incidentes-card h3 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.incidentes-tabla td,
+.incidentes-tabla th {
+  vertical-align: middle;
+}
+
+.incidentes-tabla .form-select {
+  min-width: 150px;
+}
+
+.incidentes-detalle {
+  color: #6c6256;
+  font-size: 0.85rem;
+}
