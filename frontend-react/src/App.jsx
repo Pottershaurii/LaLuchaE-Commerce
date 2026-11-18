@@ -23,13 +23,16 @@ import heroImg from './assets/images/hero-sanguche.jpg'
 function RutaAdmin({ children }) {
   const token = localStorage.getItem('token')
   if (!token) return <Navigate to="/" replace />
+
+  let rol = null
   try {
     const payload = JSON.parse(atob(token.split('.')[1]))
-    const rol = payload.rol || payload.role
-    if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
+    rol = payload.rol || payload.role
   } catch {
     return <Navigate to="/" replace />
   }
+
+  if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
   return children
 }
 
