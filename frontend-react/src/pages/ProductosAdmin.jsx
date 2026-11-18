@@ -26,7 +26,7 @@ function ProductosAdmin() {
   const [cargando, setCargando] = useState(true)
   const [form, setForm] = useState({ nombre: '', descripcion: '', precio: '', imagenUrl: '', categoriaId: '', stockMinimo: 5 })
   const [editando, setEditando] = useState(null)
-  const [mensaje, setMensaje] = useState('')
+  const [mensaje, setMensaje] = useState(null)
 
   const token = localStorage.getItem('token')
 
@@ -37,6 +37,9 @@ function ProductosAdmin() {
     ]).then(([prods, cats]) => {
       setProductos(prods)
       setCategorias(cats)
+      setCargando(false)
+    }).catch(() => {
+      setMensaje({ texto: 'No se pudo cargar la información. Intenta de nuevo.', error: true })
       setCargando(false)
     })
   }
@@ -55,12 +58,13 @@ function ProductosAdmin() {
       body: JSON.stringify({ ...form, precio: parseFloat(form.precio), categoriaId: parseInt(form.categoriaId) })
     })
     if (res.ok) {
-      setMensaje(editando ? 'Producto actualizado' : 'Producto creado')
+      setMensaje({ texto: editando ? 'Producto actualizado' : 'Producto creado', error: false })
       setForm({ nombre: '', descripcion: '', precio: '', imagenUrl: '', categoriaId: '', stockMinimo: 5 })
       setEditando(null)
       cargar()
     } else {
-      setMensaje('Error al guardar')
+      const datos = await res.json().catch(() => ({}))
+      setMensaje({ texto: datos.error || datos.message || 'Error al guardar', error: true })
     }
   }
 
@@ -70,7 +74,12 @@ function ProductosAdmin() {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })
-    if (res.ok) cargar()
+    if (res.ok) {
+      setMensaje({ texto: 'Producto desactivado', error: false })
+      cargar()
+    } else {
+      setMensaje({ texto: 'No se pudo desactivar el producto', error: true })
+    }
   }
 
   const editar = (p) => {
@@ -92,9 +101,11 @@ function ProductosAdmin() {
         <h1 style={{ marginBottom: '1.5rem', fontWeight: 600 }}>Productos</h1>
         {mensaje && (
         <p style={{
-            background: '#e8f5e9', color: '#2e7d32', padding: '0.75rem 1rem',
+            background: mensaje.error ? '#fdecea' : '#e8f5e9',
+            color: mensaje.error ? '#c62828' : '#2e7d32',
+            padding: '0.75rem 1rem',
             borderRadius: '6px', marginBottom: '1rem'
-        }}>{mensaje}</p>
+        }}>{mensaje.texto}</p>
         )}
         <form onSubmit={guardar} style={{
         display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', maxWidth: '100%',
