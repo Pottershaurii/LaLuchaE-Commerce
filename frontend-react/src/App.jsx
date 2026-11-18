@@ -20,6 +20,19 @@ import Catalogo from './pages/Catalogo.jsx'
 
 import heroImg from './assets/images/hero-sanguche.jpg'
 
+function RutaAdmin({ children }) {
+  const token = localStorage.getItem('token')
+  if (!token) return <Navigate to="/" replace />
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]))
+    const rol = payload.rol || payload.role
+    if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
+  } catch {
+    return <Navigate to="/" replace />
+  }
+  return children
+}
+
 function App() {
   const [authView, setAuthView] = useState(null)
   const [registeredEmail, setRegisteredEmail] = useState('')
@@ -74,19 +87,6 @@ function App() {
 
   const handleVerificationSuccess = () => {
     setAuthView('login')
-  }
-
-  function RutaAdmin({ children }) {
-    const token = localStorage.getItem('token')
-    if (!token) return <Navigate to="/" replace />
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]))
-      const rol = payload.rol || payload.role
-      if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
-    } catch {
-      return <Navigate to="/" replace />
-    }
-    return children
   }
 
   return (
