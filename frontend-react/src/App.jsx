@@ -24,14 +24,14 @@ function RutaAdmin({ children }) {
   const token = localStorage.getItem('token')
   if (!token) return <Navigate to="/" replace />
 
-  let rol = null
+  let payload
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]))
-    rol = payload.rol || payload.role
+    payload = JSON.parse(atob(token.split('.')[1]))
   } catch {
     return <Navigate to="/" replace />
   }
-
+  
+  const rol = payload.rol || payload.role
   if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
   return children
 }
