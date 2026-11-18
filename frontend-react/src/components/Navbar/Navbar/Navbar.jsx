@@ -87,6 +87,12 @@ function Navbar({ onOpenAuth }) {
             >
               Contacto
             </Nav.Link>
+            <Nav.Link
+              href="#soporte"
+              className="navbar-link"
+            >
+              Soporte
+            </Nav.Link>
 
           </Nav>
 
