@@ -27,11 +27,16 @@ function RutaAdmin({ children }) {
 
   let payload
   try {
-    payload = JSON.parse(atob(token.split('.')[1]))
+    // El JWT viene en base64url: se pasa a base64 normal antes de decodificar
+    const base64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')
+    payload = JSON.parse(atob(base64))
   } catch {
     return <Navigate to="/" replace />
   }
-  
+
+  // Sesión vencida: el backend rechazaría todas las llamadas del panel
+  if (payload.exp && payload.exp * 1000 < Date.now()) return <Navigate to="/" replace />
+
   const rol = payload.rol || payload.role
   if (rol !== 'ADMIN' && rol !== 'ROLE_ADMIN') return <Navigate to="/" replace />
   return children
