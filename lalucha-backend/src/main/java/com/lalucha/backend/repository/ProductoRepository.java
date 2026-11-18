@@ -12,4 +12,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
     List<Producto> findByCategoriaIdAndActivoTrue(Long categoriaId);
 
     long countByCategoriaId(Long categoriaId);
+
+    boolean existsBySku(String sku);
+
+    boolean existsBySlug(String slug);
 }
