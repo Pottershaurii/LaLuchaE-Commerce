@@ -32,8 +32,8 @@ function ProductosAdmin() {
 
   const cargar = () => {
     Promise.all([
-      fetch('http://localhost:8080/api/productos').then(r => r.json()),
-      fetch('http://localhost:8080/api/categorias').then(r => r.json())
+      fetch(`${API}/api/productos`).then(r => r.json()),
+      fetch(`${API}/api/categorias`).then(r => r.json())
     ]).then(([prods, cats]) => {
       setProductos(prods)
       setCategorias(cats)
@@ -46,8 +46,8 @@ function ProductosAdmin() {
   const guardar = async (e) => {
     e.preventDefault()
     const url = editando
-      ? `http://localhost:8080/api/productos/${editando}`
-      : 'http://localhost:8080/api/productos'
+      ? `${API}/api/productos/${editando}`
+      : `${API}/api/productos`
     const method = editando ? 'PUT' : 'POST'
     const res = await fetch(url, {
       method,
@@ -66,7 +66,7 @@ function ProductosAdmin() {
 
   const desactivar = async (id) => {
     if (!confirm('¿Desactivar este producto?')) return
-    const res = await fetch(`http://localhost:8080/api/productos/${id}`, {
+    const res = await fetch(`${API}/api/productos/${id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${token}` }
     })

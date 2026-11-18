@@ -1,21 +1,15 @@
 import { Container, Row, Col } from 'react-bootstrap'
 import ProductCard from '../components/Navbar/ProductCard/ProductCard.jsx'
-import lechonImg from '../assets/images/lechon.jfif'
-import pavoImg from '../assets/images/pavo.jfif'
-import chicharronImg from '../assets/images/chicharron.jpg'
-import laLuchaImg from '../assets/images/la-lucha.jfif'
-import asadoImg from '../assets/images/asado.jfif'
-import hamburguesaImg from '../assets/images/hamburguesa.jpeg'
 import { useEffect, useState } from 'react'
 
-const API = import.meta.env.VITE_API_URL
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 function Catalogo() {
 
   const [productos, setProductos] = useState([])
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/productos')
+    fetch(`${API}/api/productos`)
       .then(r => r.json())
       .then(data => {
         const mapeados = data.map(p => ({
