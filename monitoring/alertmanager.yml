@@ -1,0 +1,28 @@
+# ============================================================================
+# Alertmanager - La Lucha E-commerce (Sesion 30)
+# Agrupa las alertas de Prometheus y las envia por webhook al API, que abre un
+# ticket en el modulo de incidentes (POST /api/incidentes/alertas).
+# El token va en monitoring/secretos/alertas_token (no se sube a GitHub) y debe
+# ser igual a la variable ALERTAS_WEBHOOK_TOKEN del API.
+# ============================================================================
+route:
+  receiver: tickets-lalucha
+  group_by: ['alertname']
+  group_wait: 10s        # espera corta para juntar alertas del mismo tipo
+  group_interval: 1m
+  repeat_interval: 4h    # no repite la misma alerta antes de 4 horas
+
+receivers:
+  - name: tickets-lalucha
+    webhook_configs:
+      - url: 'http://host.docker.internal:8080/api/incidentes/alertas'
+        send_resolved: true
+        http_config:
+          authorization:
+            type: Alerta
+            credentials_file: /etc/alertmanager/secretos/alertas_token
+
+# Si hay una alerta critica activa, no se notifica la advertencia equivalente
+inhibit_rules:
+  - source_matchers: ['alertname="CpuCritica"']
+    target_matchers: ['alertname="CpuAlta"']

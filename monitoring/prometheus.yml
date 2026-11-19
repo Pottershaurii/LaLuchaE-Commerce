@@ -1,0 +1,31 @@
+# ============================================================================
+# Prometheus - La Lucha E-commerce (Sesion 30: Monitoreo y gestion de eventos)
+# Modelo pull: cada 15 s lee /actuator/prometheus del API Spring Boot.
+# Si el API corre fuera de Docker (IntelliJ, VS Code o mvnw), se alcanza como
+# host.docker.internal:8080 (Windows, Mac y Linux con extra_hosts host-gateway).
+# ============================================================================
+global:
+  scrape_interval: 15s       # frecuencia de recoleccion (modelo pull)
+  evaluation_interval: 15s   # frecuencia de evaluacion de las reglas de alerta
+  external_labels:
+    proyecto: lalucha-ecommerce
+
+rule_files:
+  - alert_rules.yml
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+
+scrape_configs:
+  - job_name: lalucha_api
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['host.docker.internal:8080']
+        labels:
+          servicio: lalucha-api
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ['localhost:9090']
