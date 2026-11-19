@@ -4,6 +4,7 @@ import com.jayway.jsonpath.JsonPath;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.actuate.observability.AutoConfigureObservability;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
@@ -24,12 +25,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * 1) /actuator/prometheus publica metricas reales sin pedir token (Ficha 01).
  * 2) El webhook de Alertmanager convierte una alerta critica en un ticket P1 (Ficha 04).
  * El token de esta prueba solo existe aqui; en produccion viene de ALERTAS_WEBHOOK_TOKEN.
+ * @AutoConfigureObservability: en pruebas Spring Boot apaga /actuator/prometheus si no se pide.
  */
 @SpringBootTest(properties = {
         "lalucha.alertas.token=token-de-prueba-local",
         "lalucha.alertas.usuario=ivan.p@example.net"
 })
 @AutoConfigureMockMvc
+@AutoConfigureObservability
 class AlertaWebhookIntegrationTest {
 
     private static final String AUTORIZACION = "Alerta token-de-prueba-local";
