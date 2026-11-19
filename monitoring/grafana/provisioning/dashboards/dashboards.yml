@@ -1,0 +1,9 @@
+# Grafana: carga el tablero "UTP - Observabilidad Proyecto Final" desde esta carpeta
+apiVersion: 1
+providers:
+  - name: lalucha
+    folder: La Lucha
+    type: file
+    allowUiUpdates: true
+    options:
+      path: /etc/grafana/provisioning/dashboards
