@@ -119,9 +119,14 @@ jobs:
           done
           docker compose -f docker-compose.monitoring.yml logs prometheus | tail -30; exit 1
 
+      - name: Configurar Python 3.12 (capturas)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: Instalar Playwright (capturas) y k6
         run: |
-          pip install --quiet playwright==1.47.0
+          pip install --quiet playwright==1.49.1
           python -m playwright install --with-deps chromium > /dev/null
           docker pull -q grafana/k6:0.57.0
 
