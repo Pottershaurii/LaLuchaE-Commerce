@@ -1,72 +1,28 @@
 import { Container, Row, Col } from 'react-bootstrap'
 import ProductCard from '../components/Navbar/ProductCard/ProductCard.jsx'
-import lechonImg from '../assets/images/lechon.jfif'
-import pavoImg from '../assets/images/pavo.jfif'
-import chicharronImg from '../assets/images/chicharron.jpg'
-import laLuchaImg from '../assets/images/la-lucha.jfif'
-import asadoImg from '../assets/images/asado.jfif'
-import hamburguesaImg from '../assets/images/hamburguesa.jpeg'
+import { useEffect, useState } from 'react'
+
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 function Catalogo() {
 
-  const productos = [
-    {
-      id: 1,
-      nombre: 'Lechón a la Leña',
-      descripcion: 'Sánguche de lechón a la leña.',
-      precio: 14.60,
-      imagen: lechonImg,
-    },
-    {
-      id: 2,
-      nombre: 'Pavo a la Leña',
-      descripcion: 'Sánguche de pavo preparado a la leña.',
-      precio: 14.90,
-      imagen: pavoImg,
-    },
-    {
-      id: 3,
-      nombre: 'Chicharrón',
-      descripcion: 'Sánguche de chicharrón.',
-      precio: 13.90,
-      imagen: chicharronImg,
-    },
-    {
-      id: 4,
-      nombre: 'La Lucha',
-      descripcion: 'Sánguche especial de la casa.',
-      precio: 15.90,
-      imagen: laLuchaImg,
-    },
-    {
-      id: 5,
-      nombre: 'Asado de Res',
-      descripcion: 'Sánguche de asado de res.',
-      precio: 14.10,
-      imagen: asadoImg,
-    },
-    {
-      id: 6,
-      nombre: 'Hamburguesa',
-      descripcion: 'Hamburguesa de la casa.',
-      precio: 13.90,
-      imagen: hamburguesaImg,
-    },
-    {
-      id: 7,
-      nombre: 'Pollo Deshilachado',
-      descripcion: 'Sánguche de pollo deshilachado.',
-      precio: 12.60,
-      imagen: '/placeholder-producto.svg',
-    },
-    {
-      id: 8,
-      nombre: 'Pollo con Piña',
-      descripcion: 'Sánguche de pollo acompañado con piña.',
-      precio: 14.90,
-      imagen: '/placeholder-producto.svg',
-    },
-  ]
+  const [productos, setProductos] = useState([])
+
+  useEffect(() => {
+    fetch(`${API}/api/productos`)
+      .then(r => r.json())
+      .then(data => {
+        const mapeados = data.map(p => ({
+          id: p.id,
+          nombre: p.nombre,
+          descripcion: p.descripcion,
+          precio: p.precio,
+          imagen: p.imagenUrl || '/placeholder-producto.svg'
+        }))
+        setProductos(mapeados)
+      })
+      .catch(() => setProductos([]))
+  }, [])
 
   return (
     <main className="catalogo py-5">

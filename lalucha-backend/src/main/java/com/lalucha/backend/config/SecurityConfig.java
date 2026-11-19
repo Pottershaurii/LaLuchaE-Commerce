@@ -74,11 +74,17 @@ public class SecurityConfig {
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
-                .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                
                 // Rutas por rol
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/cliente/**").hasAnyRole("CLIENTE", "ADMIN")
                 .requestMatchers("/api/checkout/**").hasAnyRole("CLIENTE", "ADMIN")
+                // Productos (HU-10): el catalogo es publico; crear, editar y desactivar solo ADMIN
+                .requestMatchers(HttpMethod.POST, "/api/categorias").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/productos").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/productos/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/productos/**").hasRole("ADMIN")
                 // Incidentes: cualquier usuario autenticado reporta; solo el personal cambia estado o asignacion
                 .requestMatchers(HttpMethod.PATCH, "/api/incidentes/**").hasAnyRole("STAFF", "ADMIN")
                 // Todo lo demas: denegado salvo usuario autenticado
