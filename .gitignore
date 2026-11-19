@@ -31,3 +31,7 @@ frontend-react/node_modules/
 .env
 .env.*
 !.env.example
+
+# Token del webhook de alertas (Sesion 30) y evidencias generadas en local
+monitoring/secretos/
+evidencias/
