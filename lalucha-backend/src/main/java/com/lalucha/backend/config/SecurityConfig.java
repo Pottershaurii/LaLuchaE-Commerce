@@ -29,6 +29,8 @@ import java.io.IOException;
  * - Denegar por defecto: todo lo que no es publico exige token valido.
  * - Reglas por rol: /api/admin/** solo ADMIN; /api/cliente/** y /api/checkout/** CLIENTE o ADMIN.
  * - Incidentes: reportar requiere sesion; cambiar estado o reasignar, STAFF o ADMIN.
+ * - Observabilidad: /actuator/health y /actuator/prometheus son publicos (solo lectura);
+ *   el webhook /api/incidentes/alertas se valida con el token de Alertmanager.
  * - Respuestas 401 (sin token / token invalido) y 403 (rol sin permiso) en JSON.
  */
 @Configuration
@@ -75,6 +77,11 @@ public class SecurityConfig {
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/categorias").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/productos").permitAll()
+                // Observabilidad (Sesion 30): Prometheus lee las metricas sin token
+                .requestMatchers(HttpMethod.GET, "/actuator/health", "/actuator/health/**",
+                        "/actuator/info", "/actuator/prometheus").permitAll()
+                // Alertmanager crea tickets; el controlador valida su propio token
+                .requestMatchers(HttpMethod.POST, "/api/incidentes/alertas").permitAll()
                 
                 // Rutas por rol
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
