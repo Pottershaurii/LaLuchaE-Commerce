@@ -20,4 +20,9 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     @Query("select t from Ticket t where t.estado.activo = true and t.usuarioReporta.email = :email "
             + "order by t.prioridad.id asc, t.createdAt desc")
     List<Ticket> listarActivosDe(@Param("email") String email);
+
+    /** Evita abrir dos tickets por la misma alerta mientras el primero siga activo. */
+    @Query("select count(t) > 0 from Ticket t where t.estado.activo = true "
+            + "and t.descripcion like concat('%', :texto, '%')")
+    boolean existeActivoConTexto(@Param("texto") String texto);
 }
