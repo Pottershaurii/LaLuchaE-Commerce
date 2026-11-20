@@ -14,7 +14,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Gestion de incidentes (ITIL 4): registro, seguimiento y cambio de estado de tickets.
@@ -75,6 +77,43 @@ public class TicketService {
 
         // La BD completa el codigo INC-### y la fecha de creacion
         return tickets.save(ticket);
+    }
+
+    /**
+     * Ticket automatico a partir de una alerta de Prometheus/Alertmanager (Sesion 30).
+     * Usa las etiquetas de la regla: priority (P1-P4), severity y modulo.
+     * Si ya hay un ticket activo para la misma alerta (misma huella), no abre otro.
+     */
+    @Transactional
+    public Optional<Ticket> registrarAlerta(String emailSistema, Map<String, String> etiquetas,
+                                            Map<String, String> anotaciones, String inicio, String huella) {
+        Map<String, String> l = etiquetas == null ? Map.of() : etiquetas;
+        Map<String, String> a = anotaciones == null ? Map.of() : anotaciones;
+        String nombre = l.getOrDefault("alertname", "Alerta");
+        String marca = "Huella: " + (huella == null || huella.isBlank() ? nombre : huella);
+        if (tickets.existeActivoConTexto(marca)) {
+            return Optional.empty();
+        }
+
+        String prioridad = l.getOrDefault("priority", "");
+        if (!prioridad.matches("P[1-4]")) {
+            prioridad = "critical".equalsIgnoreCase(l.get("severity")) ? "P1" : "P3";
+        }
+        String moduloEtiqueta = l.get("modulo");
+        String modulo = moduloEtiqueta != null && MODULOS.contains(moduloEtiqueta) ? moduloEtiqueta : "Otro";
+        String titulo = recortar("[Alerta] " + a.getOrDefault("summary", nombre), 150);
+        String descripcion = recortar(a.getOrDefault("description", "Sin descripcion.")
+                + "\n\nAlerta: " + nombre
+                + " | Severidad: " + l.getOrDefault("severity", "-")
+                + " | Inicio: " + (inicio == null ? "-" : inicio)
+                + " | Origen: Prometheus + Alertmanager"
+                + "\n" + marca, 4000);
+
+        return Optional.of(registrar(emailSistema, titulo, modulo, descripcion, prioridad));
+    }
+
+    private static String recortar(String texto, int maximo) {
+        return texto.length() <= maximo ? texto : texto.substring(0, maximo);
     }
 
     @Transactional(readOnly = true)

@@ -1,0 +1,85 @@
+# ============================================================================
+# Reglas de alerta - La Lucha E-commerce (Sesion 30)
+# Umbrales del SLA (APF3) y del Plan de Capacidad: p95 < 500 ms, errores < 1 %,
+# CPU de App Service B1 por debajo de 85 %.
+# Cada regla usa una ventana sostenida ("for") para no alertar por picos de segundos
+# (alert fatigue). Las etiquetas priority y modulo pasan tal cual al ticket automatico.
+# ============================================================================
+groups:
+  - name: alertas_criticas_lalucha
+    rules:
+      - alert: ApiCaida
+        expr: up{job="lalucha_api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          priority: P1
+          modulo: Tienda web
+        annotations:
+          summary: "La API lalucha-api no responde ({{ $labels.instance }})"
+          description: "Prometheus no puede leer /actuator/prometheus desde hace mas de 1 minuto. Revisar el contenedor o App Service y el ultimo despliegue."
+
+      - alert: TasaErroresCritica5xx
+        expr: |
+          sum(rate(http_server_requests_seconds_count{job="lalucha_api", status=~"5.."}[1m]))
+            / clamp_min(sum(rate(http_server_requests_seconds_count{job="lalucha_api"}[1m])), 0.001)
+            > 0.05
+        for: 1m
+        labels:
+          severity: critical
+          priority: P1
+          modulo: Tienda web
+        annotations:
+          summary: "Errores 5xx sobre el 5 % en lalucha-api"
+          description: "Mas del 5 % de las peticiones terminan en error 5xx durante 1 minuto. Revisar logs del Backend y la conexion con PostgreSQL."
+
+      - alert: CpuCritica
+        expr: process_cpu_usage{job="lalucha_api"} > 0.85
+        for: 1m
+        labels:
+          severity: critical
+          priority: P1
+          modulo: Tienda web
+        annotations:
+          summary: "CPU del API sobre 85 % ({{ $value | humanizePercentage }})"
+          description: "El proceso Java usa mas del 85 % de la CPU disponible durante 1 minuto. Riesgo de lentitud y caida en hora pico: evaluar escalar a 2 instancias."
+
+      - alert: PoolConexionesBDAgotado
+        expr: |
+          max(hikaricp_connections_active{job="lalucha_api"})
+            / max(hikaricp_connections_max{job="lalucha_api"}) > 0.9
+        for: 1m
+        labels:
+          severity: critical
+          priority: P1
+          modulo: Base de datos
+        annotations:
+          summary: "Pool de conexiones a PostgreSQL al 90 %"
+          description: "HikariCP tiene mas del 90 % de sus conexiones ocupadas durante 1 minuto. Las peticiones empezaran a fallar a los 5 s."
+
+  - name: advertencias_lalucha
+    rules:
+      - alert: CpuAlta
+        expr: process_cpu_usage{job="lalucha_api"} > 0.70
+        for: 2m
+        labels:
+          severity: warning
+          priority: P3
+          modulo: Tienda web
+        annotations:
+          summary: "CPU del API sobre 70 % ({{ $value | humanizePercentage }})"
+          description: "Advertencia de saturacion: la CPU se mantiene sobre 70 % durante 2 minutos."
+
+      - alert: LatenciaP95Alta
+        expr: |
+          histogram_quantile(0.95,
+            sum by (le) (rate(http_server_requests_seconds_bucket{job="lalucha_api", uri!~"/actuator.*"}[5m]))
+          ) > 0.5
+        for: 2m
+        labels:
+          severity: warning
+          priority: P2
+          modulo: Tienda web
+        annotations:
+          summary: "Latencia p95 sobre 500 ms (incumple el SLA)"
+          description: "El percentil 95 de las respuestas del API supera 500 ms durante 2 minutos."

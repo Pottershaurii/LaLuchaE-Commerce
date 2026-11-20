@@ -1,0 +1,261 @@
+name: Monitoreo y Gestion de Eventos
+
+# Sesion 30 - Fichas 01 a 04, de punta a punta y con capturas de evidencia:
+#   01  El API publica /actuator/prometheus (Spring Boot Actuator + Micrometer).
+#   02  Prometheus lo lee cada 15 s (target UP) y carga las reglas de alerta.
+#   03  Grafana muestra el tablero con las 4 senales doradas.
+#   04  Estres controlado con k6 (CPU > 85 %) y caida simulada del API:
+#       la alerta pasa a FIRING, Alertmanager crea un ticket P1 en el modulo de
+#       incidentes y, al restablecer el servicio, la alerta queda RESOLVED.
+# Todo corre en un entorno efimero: no toca produccion. Las capturas quedan en el
+# artefacto "evidencias-monitoreo".
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'monitoring/**'
+      - 'docker-compose.monitoring.yml'
+      - '.github/workflows/monitoreo.yml'
+
+concurrency:
+  group: monitoreo-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  observabilidad:
+    name: Observabilidad (Prometheus + Grafana + alerta P1)
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    # Valores solo para este entorno efimero (no son credenciales reales)
+    env:
+      PGHOST: localhost
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: lalucha
+      EVIDENCIAS: evidencias
+      TZ: America/Lima
+      PROM: http://localhost:9090
+      API: http://localhost:8080
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Secretos efimeros de esta corrida
+        run: |
+          mkdir -p monitoring/secretos "$EVIDENCIAS"
+          openssl rand -hex 24 > monitoring/secretos/alertas_token
+          chmod 644 monitoring/secretos/alertas_token
+          echo "::add-mask::$(cat monitoring/secretos/alertas_token)"
+          GRAFANA_CLAVE=$(openssl rand -hex 16)
+          echo "::add-mask::$GRAFANA_CLAVE"
+          {
+            echo "GRAFANA_ADMIN_PASSWORD=$GRAFANA_CLAVE"
+            echo "GRAFANA_ANONIMO=true"
+            echo "GRAFANA_ANONIMO_ROL=Admin"
+          } > .env
+
+      - name: Base de datos (PostgreSQL 16) con schema y seed
+        run: |
+          docker run -d --name db -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=lalucha -p 5432:5432 postgres:16
+          for i in $(seq 1 30); do docker exec db pg_isready -U postgres && break; sleep 2; done
+          sleep 2
+          psql -v ON_ERROR_STOP=1 -q -f database/schema.sql
+          psql -v ON_ERROR_STOP=1 -q -f database/seed.sql
+
+      - name: Construir la imagen del API (mismo Dockerfile que produccion)
+        run: docker build -t lalucha-api:monitoreo lalucha-backend
+
+      - name: Levantar el API con 1 vCPU (como App Service B1)
+        run: |
+          docker run -d --name api --cpus 1 --memory 1792m -p 8080:8080 \
+            --add-host host.docker.internal:host-gateway \
+            -e SPRING_DATASOURCE_URL='jdbc:postgresql://host.docker.internal:5432/lalucha?currentSchema=lalucha' \
+            -e DB_USERNAME=postgres -e DB_PASSWORD=postgres \
+            -e JWT_SECRET=clave-solo-para-la-prueba-de-monitoreo-lalucha-2026 \
+            -e MAIL_USERNAME=ci@example.com -e MAIL_PASSWORD=no-usado \
+            -e ALERTAS_WEBHOOK_TOKEN="$(cat monitoring/secretos/alertas_token)" \
+            -e ALERTAS_USUARIO_EMAIL=ivan.p@example.net \
+            lalucha-api:monitoreo
+          for i in $(seq 1 60); do
+            curl -sf "$API/api/health" >/dev/null && { echo "API listo en $((i*2)) s"; exit 0; }
+            sleep 2
+          done
+          docker logs api; exit 1
+
+      - name: Ficha 01 - el API publica /actuator/prometheus
+        run: |
+          for i in $(seq 1 10); do curl -s -o /dev/null "$API/api/productos"; done
+          curl -s "$API/actuator/prometheus" > "$EVIDENCIAS/metrics-completo.txt"
+          {
+            echo "$ date"
+            date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
+            echo
+            echo "$ curl -i http://localhost:8080/actuator/prometheus   # extracto"
+            curl -si "$API/actuator/prometheus" | tr -d '\r' | grep -E \
+              '^(HTTP/|Content-Type)|^# (HELP|TYPE) (process_cpu_usage|jvm_memory_used_bytes|jvm_threads_live_threads|http_server_requests_seconds) |^process_cpu_usage|^jvm_memory_used_bytes\{.*area="heap"|^jvm_threads_live_threads|^hikaricp_connections_(active|max)\{|^http_server_requests_seconds_count\{.*uri="/api/(productos|health)"' \
+              | head -45
+            echo
+            echo "$ curl -s http://localhost:8080/actuator/prometheus | wc -l"
+            wc -l < "$EVIDENCIAS/metrics-completo.txt"
+          } > "$EVIDENCIAS/ficha01-metrics.txt"
+          cat "$EVIDENCIAS/ficha01-metrics.txt"
+          grep -q '^process_cpu_usage' "$EVIDENCIAS/metrics-completo.txt"
+          grep -q '^http_server_requests_seconds_count' "$EVIDENCIAS/metrics-completo.txt"
+
+      - name: Ficha 02 - levantar Prometheus, Alertmanager y Grafana
+        run: |
+          docker compose -f docker-compose.monitoring.yml up -d
+          for i in $(seq 1 60); do curl -sf "$PROM/-/ready" >/dev/null && curl -sf http://localhost:3000/api/health >/dev/null && curl -sf http://localhost:9093/-/ready >/dev/null && break; sleep 2; done
+          for i in $(seq 1 40); do
+            ESTADO=$(curl -s "$PROM/api/v1/query" --data-urlencode 'query=up{job="lalucha_api"}' | jq -r '.data.result[0].value[1] // "sin-dato"')
+            echo "up{job=lalucha_api} = $ESTADO"
+            [ "$ESTADO" = "1" ] && { echo "Target UP"; echo UP > "$EVIDENCIAS/estado-target.txt"; exit 0; }
+            sleep 3
+          done
+          docker compose -f docker-compose.monitoring.yml logs prometheus | tail -30; exit 1
+
+      - name: Configurar Python 3.12 (capturas)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Playwright (capturas) y k6
+        run: |
+          pip install --quiet playwright==1.49.1
+          python -m playwright install --with-deps chromium > /dev/null
+          docker pull -q grafana/k6:0.57.0
+
+      - name: Trafico base de 2 minutos
+        run: |
+          docker run --rm --network host -v "$PWD/monitoring:/scripts:ro" grafana/k6:0.57.0 run --quiet \
+            -e API_URL="$API" -e VUS=3 -e PAUSA=1 -e DURACION=120s /scripts/script_carga.js
+
+      - name: Evidencias en estado normal (Fichas 01 a 03)
+        run: |
+          C="python3 monitoring/capturar_evidencia.py"
+          $C --texto "$EVIDENCIAS/ficha01-metrics.txt" --titulo "Ficha 01 · /actuator/prometheus de lalucha-api" --salida "$EVIDENCIAS/ficha01-metrics.png" --alto 1100 --completa
+          $C --url "$PROM/targets" --esperar-texto "lalucha_api" --titulo "Ficha 02 · Prometheus Targets (UP)" --salida "$EVIDENCIAS/ficha02-targets.png"
+          $C --url "$PROM/alerts" --esperar-texto "alertas_criticas_lalucha" --titulo "Ficha 02 · Reglas de alerta cargadas" --salida "$EVIDENCIAS/ficha02-reglas.png" --completa
+          $C --url "http://localhost:3000/connections/datasources/edit/prometheus-lalucha" --clic "^(Save & test|Test)$" \
+             --esperar-texto "Successfully queried" --titulo "Ficha 03 · Data source Prometheus en Grafana" --salida "$EVIDENCIAS/ficha03-datasource.png" --completa
+          $C --url "http://localhost:3000/d/lalucha-observabilidad/?orgId=1&from=now-15m&to=now&refresh=5s&kiosk" --esperar-ms 12000 \
+             --titulo "Ficha 03 · Tablero en estado normal" --salida "$EVIDENCIAS/ficha03-dashboard.png" --alto 1250
+
+      - name: Ficha 04 - estres controlado (k6, 40 usuarios, CPU > 85 %)
+        run: |
+          C="python3 monitoring/capturar_evidencia.py"
+          docker run --rm --network host -v "$PWD/monitoring:/scripts:ro" -v "$PWD/$EVIDENCIAS:/out" grafana/k6:0.57.0 run --quiet \
+            -e API_URL="$API" -e VUS=40 -e DURACION=240s --summary-export /out/k6-estres.json /scripts/script_carga.js \
+            > "$EVIDENCIAS/k6-estres.log" 2>&1 &
+          K6=$!
+          FIRING=no
+          for i in $(seq 1 75); do
+            ALERTAS=$(curl -s "$PROM/api/v1/alerts" | jq -r '[.data.alerts[] | "\(.labels.alertname)=\(.state)"] | join(" ")')
+            echo "$(date +%H:%M:%S) alertas: ${ALERTAS:-ninguna}"
+            if echo "$ALERTAS" | grep -q 'CpuCritica=firing'; then FIRING=si; break; fi
+            sleep 4
+          done
+          echo "$FIRING" > "$EVIDENCIAS/estado-cpu-firing.txt"
+          sleep 20   # deja que Alertmanager entregue el webhook
+          $C --url "http://localhost:3000/d/lalucha-observabilidad/?orgId=1&from=now-15m&to=now&refresh=5s&kiosk" --esperar-ms 12000 \
+             --titulo "Ficha 04 · Tablero durante el estres (alerta FIRING)" --salida "$EVIDENCIAS/ficha04-dashboard-estres.png" --alto 1250
+          $C --url "$PROM/alerts" --esperar-texto "CpuCritica" --titulo "Ficha 04 · Prometheus: alerta CpuCritica en FIRING" --salida "$EVIDENCIAS/ficha04-prometheus-firing.png" --completa
+          $C --url "http://localhost:9093/#/alerts" --esperar-texto "CpuCritica" --titulo "Ficha 04 · Alertmanager recibio la alerta" --salida "$EVIDENCIAS/ficha04-alertmanager.png"
+          wait $K6 || true
+          tail -25 "$EVIDENCIAS/k6-estres.log"
+
+      - name: Ficha 04 - ticket P1 creado automaticamente
+        run: |
+          TOKEN=$(curl -s -X POST "$API/api/auth/login" -H 'Content-Type: application/json' \
+            --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}' | jq -r .token)
+          for i in $(seq 1 30); do
+            curl -s "$API/api/incidentes" -H "Authorization: Bearer $TOKEN" > "$EVIDENCIAS/tickets.json"
+            jq -e '[.[] | select((.titulo | startswith("[Alerta]")) and .prioridad == "P1")] | length > 0' "$EVIDENCIAS/tickets.json" >/dev/null && break
+            sleep 5
+          done
+          jq -r '.[] | "\(.codigo) \(.prioridad) \(.estado) \(.titulo)"' "$EVIDENCIAS/tickets.json"
+          python3 monitoring/capturar_evidencia.py --tickets "$EVIDENCIAS/tickets.json" \
+            --titulo "Ficha 04 · Ticket P1 creado por la alerta (módulo de incidentes)" --salida "$EVIDENCIAS/ficha04-ticket-p1.png" --completa
+
+      - name: Ficha 04 - caida simulada del API (docker stop)
+        run: |
+          C="python3 monitoring/capturar_evidencia.py"
+          docker stop api
+          for i in $(seq 1 60); do
+            ALERTAS=$(curl -s "$PROM/api/v1/alerts" | jq -r '[.data.alerts[] | "\(.labels.alertname)=\(.state)"] | join(" ")')
+            echo "$(date +%H:%M:%S) alertas: ${ALERTAS:-ninguna}"
+            echo "$ALERTAS" | grep -q 'ApiCaida=firing' && break
+            sleep 4
+          done
+          $C --url "http://localhost:3000/d/lalucha-observabilidad/?orgId=1&from=now-15m&to=now&refresh=5s&kiosk" --esperar-ms 12000 \
+             --titulo "Ficha 04 · API detenida: estado DOWN y alerta ApiCaida" --salida "$EVIDENCIAS/ficha04-dashboard-caida.png" --alto 1250
+          $C --url "$PROM/alerts" --esperar-texto "ApiCaida" --titulo "Ficha 04 · Prometheus: ApiCaida en FIRING" --salida "$EVIDENCIAS/ficha04-prometheus-caida.png" --completa
+
+      - name: Ficha 04 - restablecer el servicio (RESOLVED)
+        run: |
+          C="python3 monitoring/capturar_evidencia.py"
+          docker start api
+          for i in $(seq 1 60); do curl -sf "$API/api/health" >/dev/null && break; sleep 2; done
+          echo "API restablecida a las $(date +%H:%M:%S)"
+          for i in $(seq 1 60); do
+            ACTIVAS=$(curl -s "$PROM/api/v1/alerts" | jq -r '[.data.alerts[] | select(.labels.severity == "critical" and .state == "firing") | .labels.alertname] | join(" ")')
+            echo "$(date +%H:%M:%S) criticas en firing: ${ACTIVAS:-ninguna}"
+            [ -z "$ACTIVAS" ] && { echo si > "$EVIDENCIAS/estado-resuelto.txt"; break; }
+            sleep 5
+          done
+          sleep 15
+          $C --url "http://localhost:3000/d/lalucha-observabilidad/?orgId=1&from=now-15m&to=now&refresh=5s&kiosk" --esperar-ms 12000 \
+             --titulo "Ficha 04 · Servicio restablecido (alertas RESOLVED)" --salida "$EVIDENCIAS/ficha04-dashboard-recuperado.png" --alto 1250
+          $C --url "$PROM/alerts" --titulo "Ficha 04 · Prometheus tras la recuperacion" --salida "$EVIDENCIAS/ficha04-prometheus-resuelto.png" --completa
+          TOKEN=$(curl -s -X POST "$API/api/auth/login" -H 'Content-Type: application/json' \
+            --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}' | jq -r .token)
+          curl -s "$API/api/incidentes" -H "Authorization: Bearer $TOKEN" > "$EVIDENCIAS/tickets-final.json"
+          $C --tickets "$EVIDENCIAS/tickets-final.json" --titulo "Ficha 04 · Tickets al cierre de la simulación" --salida "$EVIDENCIAS/ficha04-tickets-final.png" --completa
+
+      - name: Resumen de la simulacion
+        if: always()
+        run: |
+          {
+            echo "## Monitoreo y gestion de eventos (Sesion 30)"
+            echo
+            echo "| Paso | Resultado |"
+            echo "|---|---|"
+            echo "| 01 /actuator/prometheus | $(grep -q '^process_cpu_usage' $EVIDENCIAS/metrics-completo.txt 2>/dev/null && echo '✅ publica metricas' || echo '❌')"
+            echo "| 02 Target en Prometheus | $([ -f $EVIDENCIAS/estado-target.txt ] && echo '✅ UP' || echo '❌')"
+            echo "| 04 Alerta CpuCritica | $(grep -q si $EVIDENCIAS/estado-cpu-firing.txt 2>/dev/null && echo '✅ FIRING' || echo '❌ no se disparo')"
+            echo "| 04 Ticket P1 automatico | $(jq -r '[.[] | select((.titulo | startswith("[Alerta]")) and .prioridad == "P1") | .codigo] | if length > 0 then "✅ " + join(", ") else "❌" end' $EVIDENCIAS/tickets.json 2>/dev/null || echo '❌')"
+            echo "| 04 Recuperacion | $([ -f $EVIDENCIAS/estado-resuelto.txt ] && echo '✅ alertas criticas RESOLVED' || echo '❌')"
+            echo
+            echo "### Tickets abiertos por alertas"
+            echo
+            echo "| Codigo | Prioridad | Estado | Titulo |"
+            echo "|---|---|---|---|"
+            jq -r '.[] | select(.titulo | startswith("[Alerta]")) | "| \(.codigo) | \(.prioridad) | \(.estado) | \(.titulo) |"' $EVIDENCIAS/tickets-final.json 2>/dev/null
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Logs de los servicios
+        if: always()
+        run: |
+          docker logs api > "$EVIDENCIAS/api.log" 2>&1 || true
+          docker compose -f docker-compose.monitoring.yml logs --no-color > "$EVIDENCIAS/stack-monitoreo.log" 2>&1 || true
+
+      - name: Guardar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-monitoreo
+          path: evidencias/
+
+      - name: Verificar el ciclo completo
+        run: |
+          [ -f "$EVIDENCIAS/estado-target.txt" ] || { echo "El target no llego a UP"; exit 1; }
+          grep -q si "$EVIDENCIAS/estado-cpu-firing.txt" || { echo "La alerta CpuCritica no se disparo"; exit 1; }
+          jq -e '[.[] | select((.titulo | startswith("[Alerta]")) and .prioridad == "P1")] | length > 0' "$EVIDENCIAS/tickets.json" >/dev/null \
+            || { echo "No se creo el ticket P1 automatico"; exit 1; }
+          [ -f "$EVIDENCIAS/estado-resuelto.txt" ] || { echo "Las alertas criticas no se resolvieron"; exit 1; }
+          echo "Ciclo completo: metricas -> alerta -> ticket P1 -> recuperacion"

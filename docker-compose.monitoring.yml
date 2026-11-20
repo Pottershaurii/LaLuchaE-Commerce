@@ -1,0 +1,53 @@
+# ============================================================================
+# Stack de observabilidad - La Lucha E-commerce (Sesion 30)
+#   Prometheus   http://localhost:9090   recolecta /actuator/prometheus cada 15 s
+#   Alertmanager http://localhost:9093   envia las alertas al API (ticket automatico)
+#   Grafana      http://localhost:3000   tablero "UTP - Observabilidad Proyecto Final"
+#
+# Antes de levantarlo (ver docs/monitoreo-prometheus-grafana.md):
+#   1. Copia .env.example a .env y define GRAFANA_ADMIN_PASSWORD.
+#   2. Guarda el token de alertas en monitoring/secretos/alertas_token.
+# Uso: docker compose -f docker-compose.monitoring.yml up -d
+# ============================================================================
+services:
+  prometheus:
+    image: prom/prometheus:v2.53.0
+    container_name: lalucha_prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  alertmanager:
+    image: prom/alertmanager:v0.27.0
+    container_name: lalucha_alertmanager
+    ports:
+      - "9093:9093"
+    volumes:
+      - ./monitoring/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/secretos:/etc/alertmanager/secretos:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.1.0
+    container_name: lalucha_grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      # Zero Hardcoding: la clave sale de .env (no se sube a GitHub)
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_AUTH_ANONYMOUS_ENABLED: ${GRAFANA_ANONIMO:-false}
+      GF_AUTH_ANONYMOUS_ORG_ROLE: ${GRAFANA_ANONIMO_ROL:-Viewer}
+      GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH: /etc/grafana/provisioning/dashboards/lalucha-observabilidad.json
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
