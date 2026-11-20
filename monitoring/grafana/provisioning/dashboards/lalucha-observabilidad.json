@@ -317,7 +317,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "Errores 5xx (%)",
-      "description": "Porcentaje de respuestas 5xx. La alerta crítica se dispara sobre 5 % sostenido 1 minuto.",
+      "description": "Porcentaje de respuestas 5xx (0 % cuando no hay errores). La alerta crítica se dispara sobre 5 % sostenido 1 minuto.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus-lalucha"
@@ -334,7 +334,7 @@
             "type": "prometheus",
             "uid": "prometheus-lalucha"
           },
-          "expr": "sum(rate(http_server_requests_seconds_count{job=\"lalucha_api\", uri!~\"/actuator.*\", status=~\"5..\"}[1m])) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"lalucha_api\", uri!~\"/actuator.*\"}[1m])), 0.001) * 100",
+          "expr": "(sum(rate(http_server_requests_seconds_count{job=\"lalucha_api\", uri!~\"/actuator.*\", status=~\"5..\"}[1m])) or vector(0)) / clamp_min(sum(rate(http_server_requests_seconds_count{job=\"lalucha_api\", uri!~\"/actuator.*\"}[1m])), 0.001) * 100",
           "legendFormat": "5xx %",
           "refId": "A",
           "range": true,
@@ -392,7 +392,7 @@
     {
       "id": 6,
       "type": "state-timeline",
-      "title": "4. Estado del servicio (up)",
+      "title": "4. Estado del servicio (verde = UP, rojo = DOWN)",
       "description": "1 = UP (verde), 0 = DOWN (rojo). Lo mide Prometheus en cada lectura.",
       "datasource": {
         "type": "prometheus",
@@ -460,12 +460,12 @@
         "overrides": []
       },
       "options": {
-        "showValue": "auto",
+        "showValue": "never",
         "rowHeight": 0.8,
         "mergeValues": true,
         "alignValue": "center",
         "legend": {
-          "showLegend": false,
+          "showLegend": true,
           "displayMode": "list",
           "placement": "bottom"
         },
@@ -477,7 +477,7 @@
     {
       "id": 7,
       "type": "state-timeline",
-      "title": "4. Historial de alertas (Prometheus)",
+      "title": "4. Historial de alertas FIRING (Prometheus)",
       "description": "Alertas en estado FIRING. Cada una genera un ticket automático en el módulo de incidentes.",
       "datasource": {
         "type": "prometheus",
@@ -531,12 +531,13 @@
           "custom": {
             "fillOpacity": 80,
             "lineWidth": 0
-          }
+          },
+          "noValue": "Sin alertas activas"
         },
         "overrides": []
       },
       "options": {
-        "showValue": "auto",
+        "showValue": "never",
         "rowHeight": 0.8,
         "mergeValues": true,
         "alignValue": "center",
