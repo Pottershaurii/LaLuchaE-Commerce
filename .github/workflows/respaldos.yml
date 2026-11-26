@@ -100,6 +100,9 @@ jobs:
           python -m playwright install --with-deps chromium > /dev/null
 
       - name: Paso 2.1 - respaldo automatico, comprimido y cifrado
+        env:
+          # pg_dump 16, igual que el servidor (el del runner es mas nuevo y su salida no carga en PostgreSQL 16)
+          PG_DUMP: docker run --rm --network host -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGSSLMODE postgres:16 pg_dump
         run: |
           {
             echo "$ date"
@@ -108,7 +111,7 @@ jobs:
             echo "# Clave: $ORIGEN_CLAVE"
             echo
             echo "$ DESTINO=respaldos continuidad/backup/respaldo.sh"
-            echo "#   pg_dump | gzip -9 | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -pass env:BACKUP_PASS"
+            echo "#   pg_dump 16 | gzip -9 | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -pass env:BACKUP_PASS"
             DESTINO=respaldos bash continuidad/backup/respaldo.sh
             echo
             echo "$ ls -l respaldos/"
