@@ -31,3 +31,8 @@ frontend-react/node_modules/
 .env
 .env.*
 !.env.example
+
+# Respaldos y evidencias generados en local (Sesion 32)
+respaldos/
+restaurado/
+evidencias/
