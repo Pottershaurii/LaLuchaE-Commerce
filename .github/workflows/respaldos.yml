@@ -161,8 +161,8 @@ jobs:
             echo "# distinto de Azure, donde estan la BD y sus respaldos automaticos."
             echo "# El artefacto no se puede modificar despues de subido; solo se borra al vencer."
             echo
-            echo "$ grep -A3 'schedule:' .github/workflows/respaldos.yml   # programacion (RPO 24 h)"
-            grep -A1 'schedule:' .github/workflows/respaldos.yml
+            echo "$ grep -A1 '^  schedule:' .github/workflows/respaldos.yml   # programacion (RPO 24 h)"
+            grep -A1 '^  schedule:' .github/workflows/respaldos.yml
             echo
             echo "$ grep retention-days .github/workflows/respaldos.yml"
             grep -E '^\s+retention-days: 14' .github/workflows/respaldos.yml

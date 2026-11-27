@@ -107,6 +107,11 @@ jobs:
 
       - name: Paso 1.3 - verificacion del reparto de carga
         run: |
+          # Token de un ADMIN de prueba del seed; se oculta en el log y no se escribe en la evidencia
+          curl -s -D cabeceras-login.txt -o login.json -X POST "$LB/api/auth/login" \
+            -H 'Content-Type: application/json' --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}'
+          TOKEN=$(jq -r .token login.json)
+          echo "::add-mask::$TOKEN"
           {
             echo "$ date"
             date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
@@ -122,10 +127,6 @@ jobs:
             done | sort | uniq -c | awk '{printf "  %-12s %s peticiones\n", $2, $1}'
             echo
             echo "# Sesion sin afinidad: el token JWT emitido por un nodo lo acepta el otro"
-            curl -s -D cabeceras-login.txt -o login.json -X POST "$LB/api/auth/login" \
-              -H 'Content-Type: application/json' --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}'
-            TOKEN=$(jq -r .token login.json)
-            echo "::add-mask::$TOKEN"
             echo "$ curl -X POST http://localhost:8088/api/auth/login  (ADMIN de prueba)"
             echo "  $(tr -d '\r' < cabeceras-login.txt | grep -E '^HTTP/' | cut -d' ' -f2)  token emitido por $(tr -d '\r' < cabeceras-login.txt | awk -F': ' '/^X-Nodo/ {print $2}')"
             echo "$ curl -H 'Authorization: Bearer \$TOKEN' http://localhost:8088/api/admin/usuarios   (4 veces)"
