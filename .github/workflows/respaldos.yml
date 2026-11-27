@@ -1,0 +1,249 @@
+name: Respaldos de Base de Datos
+
+# Sesion 32 - Actividad 2 y Prueba 3.2 (ISO/IEC 20000-1, clausula 8.7; regla 3-2-1-1-0):
+#   2.1  pg_dump | gzip | openssl AES-256 todos los dias a las 02:00 (RPO 24 h).
+#   2.2  Copia fuera de Azure (almacenamiento de artefactos de GitHub) con retencion de 14 dias.
+#   3.2  Cada corrida descarga el respaldo, lo restaura en una BD limpia (sandbox), compara
+#        las filas de cada tabla y mide el RTO real. Si algo no coincide, el workflow falla.
+#
+# Origen de los datos:
+#   - Si el repositorio tiene los secretos BACKUP_PGHOST, BACKUP_PGUSER, BACKUP_PGPASSWORD y
+#     BACKUP_PGDATABASE, respalda la BD de Azure (conexion SSL).
+#   - Si no, respalda una replica efimera (schema + seed + 3 anos de datos sinteticos).
+# Clave de cifrado: secreto BACKUP_PASS. Sin el, se usa una clave efimera de la corrida
+# (sirve para el simulacro, pero ese respaldo no se podra descifrar despues).
+on:
+  schedule:
+    - cron: '0 7 * * *'   # todos los dias 02:00 hora de Lima
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'continuidad/backup/**'
+      - 'continuidad/capturar_evidencia.py'
+      - '.github/workflows/respaldos.yml'
+
+concurrency:
+  group: respaldos-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  respaldo:
+    name: Respaldo cifrado, envio off-site y prueba de restauracion
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: America/Lima
+      BACKUP_KEEP_DAYS: '14'
+      EVIDENCIAS: evidencias
+      CAPTURA: python3 continuidad/capturar_evidencia.py
+      ARTEFACTO: respaldo-bd-${{ github.run_number }}
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Clave de cifrado
+        env:
+          CLAVE_REPO: ${{ secrets.BACKUP_PASS }}
+        run: |
+          mkdir -p "$EVIDENCIAS"
+          if [ -n "$CLAVE_REPO" ]; then
+            echo "BACKUP_PASS=$CLAVE_REPO" >> "$GITHUB_ENV"
+            echo "ORIGEN_CLAVE=secreto BACKUP_PASS del repositorio" >> "$GITHUB_ENV"
+          else
+            CLAVE=$(openssl rand -hex 32)
+            echo "::add-mask::$CLAVE"
+            echo "BACKUP_PASS=$CLAVE" >> "$GITHUB_ENV"
+            echo "ORIGEN_CLAVE=clave efimera de esta corrida (falta el secreto BACKUP_PASS)" >> "$GITHUB_ENV"
+          fi
+
+      - name: Origen de los datos
+        env:
+          AZ_PGHOST: ${{ secrets.BACKUP_PGHOST }}
+          AZ_PGUSER: ${{ secrets.BACKUP_PGUSER }}
+          AZ_PGPASSWORD: ${{ secrets.BACKUP_PGPASSWORD }}
+          AZ_PGDATABASE: ${{ secrets.BACKUP_PGDATABASE }}
+        run: |
+          if [ -n "$AZ_PGHOST" ]; then
+            {
+              echo "PGHOST=$AZ_PGHOST"; echo "PGUSER=$AZ_PGUSER"; echo "PGPASSWORD=$AZ_PGPASSWORD"
+              echo "PGDATABASE=${AZ_PGDATABASE:-lalucha}"; echo "PGSSLMODE=require"
+              echo "ORIGEN=Azure PostgreSQL Flexible (produccion)"
+            } >> "$GITHUB_ENV"
+          else
+            # Valores solo para este entorno efimero (no son credenciales reales)
+            docker run -d --name bd_origen -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=lalucha -p 5432:5432 postgres:16
+            for i in $(seq 1 30); do docker exec bd_origen pg_isready -h 127.0.0.1 -U postgres && break; sleep 2; done
+            export PGHOST=localhost PGUSER=postgres PGPASSWORD=postgres PGDATABASE=lalucha
+            psql -v ON_ERROR_STOP=1 -q -f database/schema.sql
+            psql -v ON_ERROR_STOP=1 -q -f database/seed.sql
+            psql -v ON_ERROR_STOP=1 -q -f performance/datos-volumen.sql
+            {
+              echo "PGHOST=localhost"; echo "PGUSER=postgres"; echo "PGPASSWORD=postgres"; echo "PGDATABASE=lalucha"
+              echo "ORIGEN=replica de produccion en CI (schema + seed + 3 anos de datos sinteticos)"
+            } >> "$GITHUB_ENV"
+          fi
+
+      - name: Configurar Python 3.12 (capturas)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Playwright (capturas)
+        run: |
+          pip install --quiet playwright==1.49.1
+          python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Paso 2.1 - respaldo automatico, comprimido y cifrado
+        env:
+          # pg_dump 16, igual que el servidor (el del runner es mas nuevo y su salida no carga en PostgreSQL 16)
+          PG_DUMP: docker run --rm --network host -e PGHOST -e PGPORT -e PGUSER -e PGPASSWORD -e PGSSLMODE postgres:16 pg_dump
+        run: |
+          {
+            echo "$ date"
+            date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
+            echo "# Disparo: ${{ github.event_name }} · origen: $ORIGEN"
+            echo "# Clave: $ORIGEN_CLAVE"
+            echo
+            echo "$ DESTINO=respaldos continuidad/backup/respaldo.sh"
+            echo "#   pg_dump 16 | gzip -9 | openssl enc -aes-256-cbc -salt -pbkdf2 -iter 200000 -pass env:BACKUP_PASS"
+            DESTINO=respaldos bash continuidad/backup/respaldo.sh
+            echo
+            echo "$ ls -l respaldos/"
+            ls -l respaldos/ | tail -n +2 | awk '{print "  " $5 "\t" $9}'
+            echo
+            echo "$ file respaldos/*.enc"
+            file respaldos/*.enc | sed 's|^respaldos/||'
+            echo
+            echo "$ head -c 48 respaldos/*.enc | od -c | head -2   # contenido ilegible sin la clave"
+            head -c 48 respaldos/*.enc | od -c | head -2
+            echo
+            echo "$ cat respaldos/*.manifiesto.txt   # filas por tabla dentro del respaldo (extracto)"
+            grep -E 'usuarios|clientes|pedidos |pedido_detalle |pagos|productos' respaldos/*.manifiesto.txt
+          } > "$EVIDENCIAS/paso21-respaldo.txt"
+          cat "$EVIDENCIAS/paso21-respaldo.txt"
+          $CAPTURA --texto "$EVIDENCIAS/paso21-respaldo.txt" --titulo "Paso 2.1 · Respaldo automático cifrado (pg_dump + gzip + AES-256)" --salida "$EVIDENCIAS/paso21-respaldo.png" --alto 900 --completa
+
+      - name: Paso 2.2 - envio off-site con retencion de 14 dias
+        id: subida
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.ARTEFACTO }}
+          path: respaldos/
+          retention-days: 14
+          if-no-files-found: error
+          compression-level: 0
+
+      - name: Paso 2.2 - evidencia del repositorio externo y la programacion
+        env:
+          GH_TOKEN: ${{ github.token }}
+          URL_ARTEFACTO: ${{ steps.subida.outputs.artifact-url }}
+        run: |
+          gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" > artefactos.json
+          jq -e --arg n "$ARTEFACTO" '.artifacts[] | select(.name == $n)' artefactos.json > artefacto.json
+          lima() { date -d "$1" '+%d/%m/%Y %H:%M:%S'; }
+          {
+            echo "$ gh api repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts"
+            echo "  nombre:      $(jq -r .name artefacto.json)"
+            echo "  id:          $(jq -r .id artefacto.json)"
+            echo "  tamano:      $(jq -r .size_in_bytes artefacto.json) bytes"
+            echo "  digest:      $(jq -r '.digest // "-"' artefacto.json)"
+            echo "  creado:      $(lima "$(jq -r .created_at artefacto.json)") (hora de Lima)"
+            echo "  vence:       $(lima "$(jq -r .expires_at artefacto.json)") (hora de Lima)  <- retencion de 14 dias"
+            echo "  ubicacion:   $URL_ARTEFACTO"
+            echo
+            echo "# Copia fuera del sitio: almacenamiento de artefactos de GitHub, otro proveedor"
+            echo "# distinto de Azure, donde estan la BD y sus respaldos automaticos."
+            echo "# El artefacto no se puede modificar despues de subido; solo se borra al vencer."
+            echo
+            echo "$ grep -A1 '^  schedule:' .github/workflows/respaldos.yml   # programacion (RPO 24 h)"
+            grep -A1 '^  schedule:' .github/workflows/respaldos.yml
+            echo
+            echo "$ grep retention-days .github/workflows/respaldos.yml"
+            grep -E '^\s+retention-days: 14' .github/workflows/respaldos.yml
+          } > "$EVIDENCIAS/paso22-offsite.txt"
+          cat "$EVIDENCIAS/paso22-offsite.txt"
+          $CAPTURA --texto "$EVIDENCIAS/paso22-offsite.txt" --titulo "Paso 2.2 · Copia off-site y retención" --salida "$EVIDENCIAS/paso22-offsite.png" --alto 750 --completa
+
+      - name: Simular la perdida de la copia local
+        run: |
+          rm -rf respaldos
+          echo "Copia local borrada; la restauracion parte solo del repositorio externo"
+
+      - name: Prueba 3.2 - inicio del cronometro (RTO)
+        run: |
+          echo "T0=$(date +%s.%N)" >> "$GITHUB_ENV"
+          echo "T0_LIMA=$(date '+%H:%M:%S')" >> "$GITHUB_ENV"
+
+      - name: Prueba 3.2 - descargar el ultimo respaldo desde el repositorio externo
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ env.ARTEFACTO }}
+          path: restaurado/
+
+      - name: Prueba 3.2 - restaurar en un sandbox limpio y verificar
+        run: |
+          T_DESCARGA=$(date '+%H:%M:%S')
+          docker run -d --name sandbox -e POSTGRES_PASSWORD=sandbox -p 5434:5432 postgres:16
+          for i in $(seq 1 30); do docker exec sandbox pg_isready -h 127.0.0.1 -U postgres && break; sleep 1; done
+          T_SANDBOX=$(date '+%H:%M:%S')
+          O_HOST="$PGHOST" O_PORT="${PGPORT:-5432}" O_USER="$PGUSER" O_PASS="$PGPASSWORD" O_DB="$PGDATABASE" O_SSL="${PGSSLMODE:-prefer}"
+          # Valores solo para este sandbox efimero (no son credenciales reales)
+          export PGHOST=localhost PGPORT=5434 PGUSER=postgres PGPASSWORD=sandbox PGSSLMODE=prefer
+          set +e
+          DB_SANDBOX=lalucha_sandbox bash continuidad/backup/restaurar.sh restaurado > restore.log 2>&1
+          CODIGO=$?
+          set -e
+          T1=$(date +%s.%N)
+          RTO=$(awk -v a="$T0" -v b="$T1" 'BEGIN {printf "%.1f", b - a}')
+          CONSULTA="SELECT count(*) AS pedidos, sum(total) AS ventas, max(codigo) AS ultimo_pedido FROM lalucha.pedidos"
+          {
+            echo "$ date"
+            date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
+            echo
+            echo "$T0_LIMA  inicio: se descarga $ARTEFACTO desde el repositorio externo"
+            echo "$T_DESCARGA  respaldo descargado; se crea un PostgreSQL 16 limpio (sandbox)"
+            echo "$T_SANDBOX  sandbox listo"
+            echo
+            echo "$ continuidad/backup/restaurar.sh restaurado"
+            sed 's/^NOTICE:.*$//' restore.log | grep -v '^$'
+            echo
+            echo "$ psql -d lalucha_sandbox -c \"$CONSULTA\""
+            psql -d lalucha_sandbox -c "$CONSULTA" | head -3
+            echo "$ psql -d lalucha (BD de origen) -c \"$CONSULTA\""
+            PGHOST="$O_HOST" PGPORT="$O_PORT" PGUSER="$O_USER" PGPASSWORD="$O_PASS" PGSSLMODE="$O_SSL" psql -d "$O_DB" -c "$CONSULTA" | head -3
+            echo
+            echo "RTO real de la restauracion (descarga + sandbox + descifrado + restore + verificacion): $RTO s  (objetivo <= 900 s)"
+          } > "$EVIDENCIAS/prueba32-restore.txt"
+          cat "$EVIDENCIAS/prueba32-restore.txt"
+          echo "RTO_RESTORE=$RTO" >> "$GITHUB_ENV"
+          $CAPTURA --texto "$EVIDENCIAS/prueba32-restore.txt" --titulo "Prueba 3.2 · Test Restore en sandbox limpio" --salida "$EVIDENCIAS/prueba32-restore.png" --alto 1000 --completa
+          exit $CODIGO
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo "## Respaldo y restauracion (Sesion 32)"
+            echo "- Origen: $ORIGEN"
+            echo "- Artefacto off-site: $ARTEFACTO (retencion 14 dias)"
+            echo "- RTO real de la restauracion: ${RTO_RESTORE:-sin dato} s (objetivo <= 900 s)"
+            grep -E 'Tablas con diferencias|RESULTADO' restore.log 2>/dev/null | sed 's/^/- /' || true
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Guardar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-respaldos
+          path: evidencias/
+          retention-days: 30
+
+      - name: Verificar el objetivo de restauracion
+        run: |
+          awk -v r="$RTO_RESTORE" 'BEGIN {exit !(r + 0 <= 900)}' && echo "Restauracion dentro del RTO de 15 min"

@@ -1,0 +1,193 @@
+name: Continuidad - Alta Disponibilidad y Failover
+
+# Sesion 32 - Actividad 1 y Prueba 3.1 (ISO/IEC 20000-1, clausula 8.7):
+#   1.1  Dos replicas activas del API (api_node_1 y api_node_2) con chequeo de salud.
+#   1.2  Balanceador Nginx (upstream, max_fails=2 fail_timeout=10s, proxy_next_upstream).
+#   1.3  Reparto de carga comprobado con la cabecera X-Nodo y el log de Nginx.
+#   3.1  Con trafico activo se detiene api_node_1 (docker stop) y se mide el RTO del failover.
+# Todo corre en un entorno efimero: no toca produccion. Las capturas quedan en el
+# artefacto "evidencias-continuidad-ha".
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'docker-compose.ha.yml'
+      - 'continuidad/nginx/**'
+      - 'continuidad/ha/**'
+      - 'continuidad/capturar_evidencia.py'
+      - '.github/workflows/continuidad-ha.yml'
+
+concurrency:
+  group: continuidad-ha-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  alta-disponibilidad:
+    name: HA (Nginx + 2 nodos) y prueba de failover
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      TZ: America/Lima
+      EVIDENCIAS: evidencias
+      LB: http://localhost:8088
+      COMPOSE: docker compose -f docker-compose.ha.yml
+      CAPTURA: python3 continuidad/capturar_evidencia.py
+
+    steps:
+      - name: Descargar el codigo
+        uses: actions/checkout@v4
+
+      - name: Secretos efimeros de esta corrida
+        run: |
+          mkdir -p "$EVIDENCIAS"
+          DB_CLAVE=$(openssl rand -hex 16)
+          JWT_CLAVE=$(openssl rand -hex 32)
+          echo "::add-mask::$DB_CLAVE"
+          echo "::add-mask::$JWT_CLAVE"
+          printf 'DB_PASSWORD=%s\nJWT_SECRET=%s\nMAIL_USERNAME=ci@example.com\nMAIL_PASSWORD=no-usado\n' "$DB_CLAVE" "$JWT_CLAVE" > .env
+
+      - name: Configurar Python 3.12 (capturas)
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Instalar Playwright (capturas)
+        run: |
+          pip install --quiet playwright==1.49.1
+          python -m playwright install --with-deps chromium > /dev/null
+
+      - name: Paso 1.1 - levantar la BD, 2 replicas del API y el balanceador
+        run: |
+          $COMPOSE up -d --build --wait --wait-timeout 300 || { $COMPOSE ps; $COMPOSE logs --tail 80; exit 1; }
+
+      - name: Paso 1.1 - evidencia de las replicas activas
+        run: |
+          {
+            echo "$ date"
+            date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
+            echo
+            echo "$ docker compose -f docker-compose.ha.yml ps"
+            $COMPOSE ps --format 'table {{.Name}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}'
+            echo
+            echo "# Salud y limites de cada replica (equivalentes a una instancia App Service B1)"
+            for c in api_node_1 api_node_2; do
+              printf '%-12s salud=%-8s vCPU=%s  memoria=%s MB  puerto=%s\n' "$c" \
+                "$(docker inspect -f '{{.State.Health.Status}}' $c)" \
+                "$(( $(docker inspect -f '{{.HostConfig.NanoCpus}}' $c) / 1000000000 ))" \
+                "$(( $(docker inspect -f '{{.HostConfig.Memory}}' $c) / 1048576 ))" \
+                "$(docker exec $c printenv SERVER_PORT)"
+            done
+            echo
+            echo "$ docker exec api_node_1 wget -qO- http://localhost:8081/api/health"
+            docker exec api_node_1 wget -qO- http://localhost:8081/api/health; echo
+            echo "$ docker exec api_node_2 wget -qO- http://localhost:8082/api/health"
+            docker exec api_node_2 wget -qO- http://localhost:8082/api/health; echo
+          } > "$EVIDENCIAS/paso11-replicas.txt"
+          cat "$EVIDENCIAS/paso11-replicas.txt"
+          $CAPTURA --texto "$EVIDENCIAS/paso11-replicas.txt" --titulo "Paso 1.1 · Dos réplicas activas del API" --salida "$EVIDENCIAS/paso11-replicas.png" --alto 800 --completa
+
+      - name: Paso 1.2 - configuracion del balanceador y health checks
+        run: |
+          {
+            echo "$ cat continuidad/nginx/nginx.conf   # montado en el contenedor lalucha_balanceador"
+            grep -vE '^\s*$' continuidad/nginx/nginx.conf | grep -v '^# Se monta'
+            echo
+            echo "$ docker exec lalucha_balanceador nginx -t"
+            docker exec lalucha_balanceador nginx -t 2>&1
+            echo
+            echo "# Health check activo de Docker en cada replica (docker-compose.ha.yml)"
+            echo "#   wget -qO- http://localhost:\$SERVER_PORT/api/health | grep -q UP   cada 5 s, 3 fallos = unhealthy"
+          } > "$EVIDENCIAS/paso12-balanceador.txt"
+          cat "$EVIDENCIAS/paso12-balanceador.txt"
+          $CAPTURA --texto "$EVIDENCIAS/paso12-balanceador.txt" --titulo "Paso 1.2 · Balanceador Nginx con health checks" --salida "$EVIDENCIAS/paso12-balanceador.png" --alto 900 --completa
+
+      - name: Paso 1.3 - verificacion del reparto de carga
+        run: |
+          # Token de un ADMIN de prueba del seed; se oculta en el log y no se escribe en la evidencia
+          curl -s -D cabeceras-login.txt -o login.json -X POST "$LB/api/auth/login" \
+            -H 'Content-Type: application/json' --data-raw '{"email":"ivan.p@example.net","password":"Password123!"}'
+          TOKEN=$(jq -r .token login.json)
+          echo "::add-mask::$TOKEN"
+          {
+            echo "$ date"
+            date '+%A %d/%m/%Y %H:%M:%S %Z (hora de Lima)'
+            echo
+            echo "$ for i in \$(seq 1 8); do curl -s -o /dev/null -D - http://localhost:8088/api/productos | grep -E 'HTTP|X-Served-By|X-Nodo'; done"
+            for i in $(seq 1 8); do
+              curl -s -o /dev/null -D - "$LB/api/productos" | tr -d '\r' | grep -E '^(HTTP/|X-Served-By|X-Nodo)' | paste -sd ' '
+            done
+            echo
+            echo "# 200 peticiones mas: reparto por nodo (round robin)"
+            for i in $(seq 1 200); do
+              curl -s -o /dev/null -D - "$LB/api/productos" | tr -d '\r' | awk -F': ' '/^X-Nodo/ {print $2}'
+            done | sort | uniq -c | awk '{printf "  %-12s %s peticiones\n", $2, $1}'
+            echo
+            echo "# Sesion sin afinidad: el token JWT emitido por un nodo lo acepta el otro"
+            echo "$ curl -X POST http://localhost:8088/api/auth/login  (ADMIN de prueba)"
+            echo "  $(tr -d '\r' < cabeceras-login.txt | grep -E '^HTTP/' | cut -d' ' -f2)  token emitido por $(tr -d '\r' < cabeceras-login.txt | awk -F': ' '/^X-Nodo/ {print $2}')"
+            echo "$ curl -H 'Authorization: Bearer \$TOKEN' http://localhost:8088/api/admin/usuarios   (4 veces)"
+            for i in 1 2 3 4; do
+              curl -s -o /dev/null -D - -H "Authorization: Bearer $TOKEN" "$LB/api/admin/usuarios" | tr -d '\r' \
+                | awk -F': ' '/^HTTP\// {split($0, a, " "); c = a[2]} /^X-Nodo/ {n = $2} END {printf "  %s  atendido por %s\n", c, n}'
+            done
+            rm -f login.json cabeceras-login.txt
+            echo
+            echo "$ docker logs lalucha_balanceador | grep nodo= | tail -6   # log de acceso de Nginx"
+            docker logs lalucha_balanceador 2>/dev/null | grep 'nodo=' | grep -v '/api/admin' | tail -6
+          } > "$EVIDENCIAS/paso13-reparto.txt"
+          cat "$EVIDENCIAS/paso13-reparto.txt"
+          $CAPTURA --texto "$EVIDENCIAS/paso13-reparto.txt" --titulo "Paso 1.3 · Ambos nodos atienden tráfico" --salida "$EVIDENCIAS/paso13-reparto.png" --alto 900 --completa
+
+      - name: Prueba 3.1 - caida de api_node_1 con trafico activo (failover)
+        run: |
+          python3 continuidad/ha/prueba_failover.py --url "$LB/api/productos" --salida "$EVIDENCIAS" --rto-objetivo 30
+          $CAPTURA --texto "$EVIDENCIAS/failover-linea-tiempo.txt" --titulo "Prueba 3.1 · Failover: docker stop api_node_1 con tráfico activo" \
+            --salida "$EVIDENCIAS/prueba31-failover.png" --alto 950 --completa
+
+      - name: Prueba 3.1 - log de Nginx durante la caida
+        run: |
+          {
+            echo "$ docker logs lalucha_balanceador 2>&1 | grep -E 'failed|disabled'   # errores que Nginx resolvio reenviando"
+            docker logs lalucha_balanceador 2>&1 | grep -E 'connect\(\) failed|upstream server temporarily disabled|no live upstreams' \
+              | sed -E 's/, client: [^,]+, server: [^,]*,/,/; s/, host: "[^"]+"//' | cut -c1-210 | head -8
+            echo
+            echo "$ docker logs lalucha_balanceador | grep 'upstream=\[.*,'   # peticiones reenviadas: igual responden 200"
+            docker logs lalucha_balanceador 2>/dev/null | grep -E 'upstream=\[[^]]*,' | head -6
+            echo
+            echo "$ docker logs lalucha_balanceador | grep -c ' 200 nodo='   vs   grep -cE ' (5..) nodo='"
+            echo "  respuestas 200: $(docker logs lalucha_balanceador 2>/dev/null | grep -c ' 200 nodo=')   respuestas 5xx: $(docker logs lalucha_balanceador 2>/dev/null | grep -cE ' 5[0-9][0-9] nodo=' || true)"
+          } > "$EVIDENCIAS/prueba31-nginx.txt"
+          cat "$EVIDENCIAS/prueba31-nginx.txt"
+          $CAPTURA --texto "$EVIDENCIAS/prueba31-nginx.txt" --titulo "Prueba 3.1 · Log de Nginx durante la caída" --salida "$EVIDENCIAS/prueba31-nginx.png" --alto 700 --completa
+
+      - name: Resumen
+        if: always()
+        run: |
+          {
+            echo "## Alta disponibilidad y failover (Sesion 32)"
+            if [ -f "$EVIDENCIAS/failover-resumen.json" ]; then
+              jq -r '"| Medida | Valor |\n|---|---|\n| Peticiones totales | \(.peticiones_totales) |\n| Peticiones fallidas para el usuario | \(.peticiones_fallidas_usuario) |\n| RTO real del failover | \(.rto_failover_s) s (objetivo <= \(.rto_objetivo_s) s) |\n| Peticiones reenviadas al otro nodo | \(.peticiones_reenviadas) |\n| Nodo de vuelta en el grupo | \(.nodo_recibe_trafico_de_nuevo) |"' "$EVIDENCIAS/failover-resumen.json"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          $COMPOSE logs --no-color > "$EVIDENCIAS/compose.log" 2>&1 || true
+
+      - name: Guardar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-continuidad-ha
+          path: evidencias/
+          retention-days: 30
+
+      - name: Verificar el objetivo de continuidad
+        run: |
+          jq -e '.peticiones_fallidas_usuario == 0 and .cumple_rto == true and .tras_deteccion_todo_al_nodo_2 == true' "$EVIDENCIAS/failover-resumen.json" \
+            && echo "Failover dentro del RTO y sin peticiones fallidas"
+
+      - name: Apagar el entorno
+        if: always()
+        run: $COMPOSE down -v
